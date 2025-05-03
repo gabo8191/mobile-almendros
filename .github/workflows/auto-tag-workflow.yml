@@ -1,0 +1,69 @@
+name: Auto Tag on Main
+
+on:
+  push:
+    branches:
+      - main
+
+# Permisos explícitos para repositorio privado
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  auto-tag:
+    name: Generate New Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para obtener todo el historial para etiquetado
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from package.json
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Latest tag: $LATEST_TAG"
+
+      - name: Check if tag exists
+        id: tag-exists
+        run: |
+          VERSION="v${{ steps.package-version.outputs.current-version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          if git tag | grep -q "^$VERSION$"; then
+            echo "EXISTS=true" >> $GITHUB_OUTPUT
+            echo "Tag $VERSION already exists"
+          else
+            echo "EXISTS=false" >> $GITHUB_OUTPUT
+            echo "Tag $VERSION does not exist"
+          fi
+
+      - name: Bump version and create new tag
+        if: steps.tag-exists.outputs.EXISTS == 'false'
+        run: |
+          VERSION=${{ steps.tag-exists.outputs.VERSION }}
+          echo "Creating new tag: $VERSION"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a $VERSION -m "Release $VERSION"
+          git push origin $VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

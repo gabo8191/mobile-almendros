@@ -1,0 +1,93 @@
+name: Auto Generate Changelog
+
+on:
+  push:
+    branches:
+      - main
+
+# Permisos explícitos para repositorio privado
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  generate-changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para obtener todo el historial para el changelog
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install standard-version
+        run: npm install -g standard-version
+
+      - name: Get latest tag
+        id: get-latest-tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Latest tag: $LATEST_TAG"
+
+      - name: Generate changelog
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Crear el archivo CHANGELOG.md inicial si no existe
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# Changelog\n\nTodos los cambios notables en este proyecto serán documentados en este archivo.\n" > CHANGELOG.md
+          fi
+
+          # Obtener el último commit
+          LAST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          LAST_COMMIT_HASH=$(git log -1 --pretty=format:"%h")
+          LAST_COMMIT_DATE=$(git log -1 --pretty=format:"%ad" --date=short)
+
+          # Obtener todos los commits desde el último tag o desde el inicio si no hay tags
+          if [ -n "${{ steps.get-latest-tag.outputs.LATEST_TAG }}" ]; then
+            COMMITS=$(git log ${{ steps.get-latest-tag.outputs.LATEST_TAG }}..HEAD --pretty=format:"* %s (%h)" --reverse)
+          else
+            COMMITS=$(git log --pretty=format:"* %s (%h)" --reverse)
+          fi
+
+          # Si no hay commits, terminar
+          if [ -z "$COMMITS" ]; then
+            echo "No hay nuevos commits para añadir al changelog."
+            exit 0
+          fi
+
+          # Crear una nueva entrada de changelog con fecha actual
+          CURRENT_DATE=$(date +"%Y-%m-%d")
+
+          # Preparar el contenido a insertar al principio del archivo
+          NEW_CONTENT="## [${{ steps.get-latest-tag.outputs.LATEST_TAG || 'Unreleased' }}] - $CURRENT_DATE\n\n"
+          NEW_CONTENT+="### Commits\n\n$COMMITS\n\n"
+
+          # Insertar el nuevo contenido después de la cabecera
+          awk -v content="$NEW_CONTENT" 'NR==4{print content}1' CHANGELOG.md > CHANGELOG.tmp
+          mv CHANGELOG.tmp CHANGELOG.md
+
+      - name: Create Pull Request if there are changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update CHANGELOG.md [skip ci]'
+          title: 'Actualización automática del CHANGELOG'
+          body: |
+            Este PR actualiza automáticamente el archivo CHANGELOG.md con los últimos cambios.
+
+            Generado automáticamente por la acción de GitHub.
+          branch: update-changelog
+          delete-branch: true
+          base: main

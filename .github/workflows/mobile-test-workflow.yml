@@ -1,0 +1,52 @@
+name: Mobile Almendros CI
+
+on:
+  push:
+    branches: [main, release, develop]
+  pull_request:
+    branches: [main, release, develop]
+
+jobs:
+  build:
+    name: Build Android App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Expo CLI
+        run: npm install -g expo-cli
+
+      - name: Lint code
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Generate native code
+        run: npx expo prebuild --clean --platform android
+
+      - name: Build for Android
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload Android build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
