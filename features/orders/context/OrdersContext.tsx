@@ -85,7 +85,8 @@ export function OrdersProvider({ children }: OrdersProviderProps) {
     // Get order by id
     const fetchOrderById = async (id: string): Promise<Order> => {
         try {
-            return await getOrderById(id, token);
+            const result = await getOrderById(id, token || undefined);
+            return result;
         } catch (err) {
             console.error('Failed to fetch order', err);
             setError('No se pudo cargar el pedido. Por favor, intente de nuevo.');
@@ -99,7 +100,7 @@ export function OrdersProvider({ children }: OrdersProviderProps) {
             setLoading(true);
             setError(null);
 
-            const success = await cancelOrder(id, token);
+            const success = await cancelOrder(id, token || undefined);
 
             // Refresh the orders list if cancellation was successful
             if (success) {

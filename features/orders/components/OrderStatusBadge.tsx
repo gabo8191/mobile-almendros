@@ -57,7 +57,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     text: {
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 13,
+        fontWeight: '500',
     },
 });

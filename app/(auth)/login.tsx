@@ -1,6 +1,6 @@
 import { View, StyleSheet, SafeAreaView, Image, Platform } from 'react-native';
 import { LoginForm } from '@/features/auth/components/LoginForm';
-import { ThemedText } from '../../components/ThemedText';
+import { ThemedText } from '@/components/ThemedText';
 import { colors } from '@/constants/Colors';
 
 export default function LoginScreen() {
@@ -48,13 +48,14 @@ const styles = StyleSheet.create({
         marginBottom: 40,
     },
     welcomeText: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 32,
+        fontWeight: 'bold',
         marginBottom: 8,
         textAlign: 'center',
     },
     subtitleText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 17,
         color: colors.textSecondary,
         textAlign: 'center',

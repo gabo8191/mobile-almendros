@@ -1,8 +1,8 @@
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { colors } from '@/constants/Colors';
-import { LogOut, User, Mail, Phone, MapPin } from 'lucide-react-native';
 
 export default function ProfileScreen() {
     const { user, logout, loading } = useAuth();
@@ -34,7 +34,7 @@ export default function ProfileScreen() {
             <View style={styles.content}>
                 <View style={styles.avatarContainer}>
                     <View style={styles.avatar}>
-                        <User size={40} color="#fff" />
+                        <Ionicons name="person" size={40} color="#fff" />
                     </View>
                 </View>
 
@@ -42,7 +42,7 @@ export default function ProfileScreen() {
                     <ThemedText style={styles.name}>{user?.name || 'Usuario'}</ThemedText>
                     <View style={styles.infoCard}>
                         <View style={styles.infoRow}>
-                            <User size={20} color={colors.textSecondary} style={styles.infoIcon} />
+                            <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
                             <ThemedText style={styles.infoLabel}>Cédula:</ThemedText>
                             <ThemedText style={styles.infoValue}>{user?.cedula || 'No disponible'}</ThemedText>
                         </View>
@@ -50,7 +50,7 @@ export default function ProfileScreen() {
                         <View style={styles.divider} />
 
                         <View style={styles.infoRow}>
-                            <Mail size={20} color={colors.textSecondary} style={styles.infoIcon} />
+                            <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
                             <ThemedText style={styles.infoLabel}>Email:</ThemedText>
                             <ThemedText style={styles.infoValue}>{user?.email || 'No disponible'}</ThemedText>
                         </View>
@@ -59,7 +59,7 @@ export default function ProfileScreen() {
                             <>
                                 <View style={styles.divider} />
                                 <View style={styles.infoRow}>
-                                    <Phone size={20} color={colors.textSecondary} style={styles.infoIcon} />
+                                    <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
                                     <ThemedText style={styles.infoLabel}>Teléfono:</ThemedText>
                                     <ThemedText style={styles.infoValue}>{user.phone}</ThemedText>
                                 </View>
@@ -70,7 +70,7 @@ export default function ProfileScreen() {
                             <>
                                 <View style={styles.divider} />
                                 <View style={styles.infoRow}>
-                                    <MapPin size={20} color={colors.textSecondary} style={styles.infoIcon} />
+                                    <Ionicons name="location-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
                                     <ThemedText style={styles.infoLabel}>Dirección:</ThemedText>
                                     <ThemedText style={styles.infoValue}>{user.address}</ThemedText>
                                 </View>
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
                         <ActivityIndicator color="#fff" />
                     ) : (
                         <>
-                            <LogOut size={20} color="#fff" />
+                            <Ionicons name="log-out-outline" size={20} color="#fff" />
                             <ThemedText style={styles.logoutText}>Cerrar Sesión</ThemedText>
                         </>
                     )}
@@ -113,8 +113,9 @@ const styles = StyleSheet.create({
         borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     title: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 34,
+        fontWeight: 'bold',
         marginLeft: 4,
     },
     content: {
@@ -138,8 +139,9 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     name: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 24,
+        fontWeight: 'bold',
         marginBottom: 24,
     },
     infoCard: {
@@ -162,13 +164,14 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     infoLabel: {
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 16,
+        fontWeight: '500',
         width: 80,
         color: colors.textSecondary,
     },
     infoValue: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 16,
         flex: 1,
     },
@@ -190,8 +193,9 @@ const styles = StyleSheet.create({
     },
     logoutText: {
         color: '#fff',
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 16,
+        fontWeight: '500',
         marginLeft: 8,
     },
 });

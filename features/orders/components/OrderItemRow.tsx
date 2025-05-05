@@ -37,12 +37,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     itemName: {
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 16,
+        fontWeight: '500',
         marginBottom: 4,
     },
     itemQuantity: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 14,
         color: colors.textSecondary,
     },
@@ -50,11 +51,12 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     itemPrice: {
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 16,
+        fontWeight: '500',
     },
     itemUnitPrice: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 13,
         color: colors.textSecondary,
     },

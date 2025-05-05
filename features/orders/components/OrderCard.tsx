@@ -1,7 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { Order } from '../types/orders.types';
-import { ChevronRight } from 'lucide-react-native';
 import { colors } from '@/constants/Colors';
 import { formatDate, formatCurrency } from '@/utils/formatters';
 import { OrderStatusBadge } from './OrderStatusBadge';
@@ -48,7 +48,7 @@ export function OrderCard({ order }: OrderCardProps) {
 
             <View style={styles.footer}>
                 <ThemedText style={styles.viewDetails}>Ver detalles</ThemedText>
-                <ChevronRight size={20} color={colors.primary} />
+                <Ionicons name="chevron-forward" size={20} color={colors.primary} />
             </View>
         </TouchableOpacity>
     );
@@ -76,8 +76,9 @@ const styles = StyleSheet.create({
         borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     orderNumber: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 18,
+        fontWeight: 'bold',
     },
     content: {
         paddingVertical: 12,
@@ -89,17 +90,18 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     label: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 15,
         color: colors.textSecondary,
     },
     value: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 15,
     },
     total: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 16,
+        fontWeight: 'bold',
         color: colors.primary,
     },
     footer: {
@@ -111,8 +113,9 @@ const styles = StyleSheet.create({
         borderTopColor: 'rgba(0,0,0,0.05)',
     },
     viewDetails: {
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 14,
+        fontWeight: '500',
         color: colors.primary,
         marginRight: 4,
     },

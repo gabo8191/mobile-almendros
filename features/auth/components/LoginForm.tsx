@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     errorText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 14,
         color: colors.error,
         textAlign: 'center',
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     forgotPasswordText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 15,
         color: colors.primary,
     },

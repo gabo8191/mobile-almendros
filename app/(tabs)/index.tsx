@@ -1,18 +1,17 @@
 import { useCallback } from 'react';
-import { View, StyleSheet, RefreshControl, SafeAreaView, Platform } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { View, StyleSheet, RefreshControl, SafeAreaView, Platform, FlatList } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useOrders } from '@/features/orders/hooks/useOrders';
 import { OrderCard } from '@/features/orders/components/OrderCard';
 import { ThemedText } from '../../components/ThemedText';
-import { Package } from 'lucide-react-native';
 import { colors } from '@/constants/Colors';
 import { Spinner } from '@/components/ui/Spinner';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { Order } from '@/features/orders/types/orders.types';
 
 export default function OrdersScreen() {
   const { orders, loading, refreshOrders, refreshing } = useOrders();
 
-  const renderItem = useCallback(({ item }) => {
+  const renderItem = useCallback(({ item }: { item: Order }) => {
     return <OrderCard order={item} />;
   }, []);
 
@@ -24,16 +23,26 @@ export default function OrdersScreen() {
     );
   }
 
+  const renderEmptyList = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="cube-outline" size={64} color={colors.textSecondary} />
+      <ThemedText style={styles.emptyText}>No tiene pedidos</ThemedText>
+      <ThemedText style={styles.emptySubtext}>
+        Los pedidos que realice aparecerán aquí
+      </ThemedText>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <ThemedText style={styles.title}>Mis Pedidos</ThemedText>
       </View>
 
-      <FlashList
+      <FlatList
         data={orders}
         renderItem={renderItem}
-        estimatedItemSize={100}
+        keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -44,13 +53,7 @@ export default function OrdersScreen() {
             colors={[colors.primary]}
           />
         }
-        ListEmptyComponent={
-          <EmptyState
-            icon={<Package size={48} color={colors.primary} />}
-            title="No hay pedidos"
-            description="No se encontraron pedidos en su cuenta."
-          />
-        }
+        ListEmptyComponent={renderEmptyList}
       />
     </SafeAreaView>
   );
@@ -70,8 +73,9 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   title: {
-    fontFamily: 'SF-Pro-Display-Bold',
+    fontFamily: 'System',
     fontSize: 34,
+    fontWeight: 'bold',
     marginLeft: 4,
   },
   loadingContainer: {
@@ -82,5 +86,23 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 16,
     paddingBottom: 100,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontFamily: 'System',
+    fontSize: 18,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontFamily: 'System',
+    fontSize: 15,
+    color: colors.textTertiary,
+    marginTop: 8,
   },
 });

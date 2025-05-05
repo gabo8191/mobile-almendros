@@ -28,13 +28,14 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     title: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 20,
+        fontWeight: 'bold',
         marginBottom: 8,
         textAlign: 'center',
     },
     description: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 16,
         color: colors.textSecondary,
         textAlign: 'center',

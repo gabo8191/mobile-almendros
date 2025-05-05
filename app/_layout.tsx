@@ -11,19 +11,15 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Ignore errors
+});
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   const [loaded, error] = useFonts({
     'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
-    // Use system fonts as fallbacks for SF fonts
-    'SF-Pro-Display-Bold': require('../assets/fonts/SpaceMono-Regular.ttf'),
-    'SF-Pro-Display-Medium': require('../assets/fonts/SpaceMono-Regular.ttf'),
-    'SF-Pro-Text-Regular': require('../assets/fonts/SpaceMono-Regular.ttf'),
-    'SF-Pro-Text-Medium': require('../assets/fonts/SpaceMono-Regular.ttf'),
-    'SF-Pro-Text-Bold': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -33,7 +29,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {
+        // Ignore errors
+      });
     }
   }, [loaded]);
 
