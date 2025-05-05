@@ -1,55 +1,90 @@
-import { TouchableOpacity, StyleSheet, ActivityIndicator, View } from 'react-native';
-import { ThemedText } from '../ThemedText';
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import { colors } from '@/constants/Colors';
 
 type ButtonProps = {
     title: string;
     onPress: () => void;
-    variant?: 'primary' | 'secondary' | 'outline';
-    disabled?: boolean;
+    variant?: 'primary' | 'outline' | 'secondary';
     loading?: boolean;
+    disabled?: boolean;
     fullWidth?: boolean;
-    style?: any;
+    style?: StyleProp<ViewStyle>;
+    textStyle?: StyleProp<TextStyle>;
 };
 
 export function Button({
     title,
     onPress,
     variant = 'primary',
-    disabled = false,
     loading = false,
+    disabled = false,
     fullWidth = false,
     style,
+    textStyle,
 }: ButtonProps) {
-    const buttonStyles = [
-        styles.button,
-        variant === 'primary' && styles.primaryButton,
-        variant === 'secondary' && styles.secondaryButton,
-        variant === 'outline' && styles.outlineButton,
-        disabled && styles.disabledButton,
-        fullWidth && styles.fullWidth,
-        style,
-    ];
+    // Get button styles based on variant
+    const getButtonStyles = () => {
+        switch (variant) {
+            case 'outline':
+                return {
+                    backgroundColor: 'transparent',
+                    borderColor: colors.primary,
+                    borderWidth: 1,
+                };
+            case 'secondary':
+                return {
+                    backgroundColor: '#F2F2F7',
+                };
+            default:
+                return {
+                    backgroundColor: colors.primary,
+                };
+        }
+    };
 
-    const textStyles = [
-        styles.text,
-        variant === 'primary' && styles.primaryText,
-        variant === 'secondary' && styles.secondaryText,
-        variant === 'outline' && styles.outlineText,
-        disabled && styles.disabledText,
-    ];
+    // Get text color based on variant
+    const getTextColor = () => {
+        switch (variant) {
+            case 'outline':
+                return colors.primary;
+            case 'secondary':
+                return colors.text;
+            default:
+                return '#FFFFFF';
+        }
+    };
+
+    const buttonStyles = getButtonStyles();
+    const textColor = getTextColor();
+    const isDisabled = disabled || loading;
 
     return (
         <TouchableOpacity
-            style={buttonStyles}
+            style={[
+                styles.button,
+                buttonStyles,
+                fullWidth && styles.fullWidth,
+                isDisabled && styles.disabled,
+                style,
+            ]}
             onPress={onPress}
-            disabled={disabled || loading}
-            activeOpacity={0.8}
+            disabled={isDisabled}
+            activeOpacity={0.7}
         >
             {loading ? (
-                <ActivityIndicator color={variant === 'outline' ? colors.primary : '#fff'} />
+                <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.primary} />
             ) : (
-                <ThemedText style={textStyles}>{title}</ThemedText>
+                <Text
+                    style={[
+                        styles.buttonText,
+                        { color: textColor },
+                        isDisabled && styles.disabledText,
+                        textStyle,
+                    ]}
+                >
+                    {title}
+                </Text>
             )}
         </TouchableOpacity>
     );
@@ -58,44 +93,25 @@ export function Button({
 const styles = StyleSheet.create({
     button: {
         paddingVertical: 14,
-        paddingHorizontal: 24,
+        paddingHorizontal: 20,
         borderRadius: 12,
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'row',
     },
-    primaryButton: {
-        backgroundColor: colors.primary,
-    },
-    secondaryButton: {
-        backgroundColor: 'rgba(34, 139, 34, 0.1)',
-    },
-    outlineButton: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: colors.primary,
-    },
-    disabledButton: {
-        backgroundColor: '#E5E5EA',
-        borderColor: '#E5E5EA',
+    buttonText: {
+        fontFamily: 'System',
+        fontSize: 16,
+        fontWeight: '600',
+        textAlign: 'center',
     },
     fullWidth: {
         width: '100%',
     },
-    text: {
-        fontSize: 16,
-        fontFamily: 'SF-Pro-Text-Medium',
-    },
-    primaryText: {
-        color: '#fff',
-    },
-    secondaryText: {
-        color: colors.primary,
-    },
-    outlineText: {
-        color: colors.primary,
+    disabled: {
+        opacity: 0.5,
     },
     disabledText: {
-        color: '#8E8E93',
+        opacity: 0.7,
     },
 });

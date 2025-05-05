@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { router, useSegments } from 'expo-router';
+import { router, useSegments, useRootNavigationState } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { login as loginApi } from '../api/authService';
 import { User } from '../types/auth.types';
@@ -35,26 +35,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const segments = useSegments();
+    const navigationState = useRootNavigationState();
 
-    // Check if the user is authenticated
-    // If not, redirect to the login page
+    // Check if the user is authenticated and redirect accordingly
     useEffect(() => {
-        if (!user && !loading) {
-            const inAuthGroup = segments[0] === '(auth)';
+        if (!navigationState?.key || loading) return;
 
-            if (!inAuthGroup) {
-                router.replace('/(auth)/login');
-            }
-        } else if (user) {
-            const inAuthGroup = segments[0] === '(auth)';
+        const inAuthGroup = segments[0] === '(auth)';
 
-            if (inAuthGroup) {
-                router.replace('/(tabs)');
-            }
+        if (!user && !inAuthGroup) {
+            // If not authenticated and not on auth screen, redirect to login
+            router.replace('/(auth)/login');
+        } else if (user && inAuthGroup) {
+            // If authenticated and on auth screen, redirect to tabs
+            router.replace('/(tabs)');
         }
-    }, [user, loading, segments]);
+    }, [user, segments, loading, navigationState?.key]);
 
-    // Load the auth state from storage
+    // Load the auth state from storage when the app loads
     useEffect(() => {
         async function loadAuthState() {
             try {
@@ -79,7 +77,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const saveAuthState = async (user: User | null, token: string | null) => {
         try {
             const authState = { user, token };
-            await SecureStore.setItemAsync(AUTH_KEY, JSON.stringify(authState));
+
+            if (user && token) {
+                await SecureStore.setItemAsync(AUTH_KEY, JSON.stringify(authState));
+            } else {
+                await SecureStore.deleteItemAsync(AUTH_KEY);
+            }
         } catch (e) {
             console.error('Failed to save auth state', e);
         }
@@ -95,23 +98,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             setUser(user);
             setToken(token);
-            saveAuthState(user, token);
-
-            router.replace('/(tabs)');
+            await saveAuthState(user, token);
         } catch (err) {
             console.error('Login failed', err);
             setError('Credenciales inválidas. Por favor intente nuevamente.');
+            throw err;
         } finally {
             setLoading(false);
         }
     };
 
     // Logout function
-    const logout = () => {
-        setUser(null);
-        setToken(null);
-        saveAuthState(null, null);
-        router.replace('/(auth)/login');
+    const logout = async () => {
+        setLoading(true);
+
+        try {
+            setUser(null);
+            setToken(null);
+            await saveAuthState(null, null);
+        } catch (err) {
+            console.error('Logout failed', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

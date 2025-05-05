@@ -1,49 +1,62 @@
-import { useEffect } from 'react';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import 'react-native-reanimated';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 import { OrdersProvider } from '@/features/orders/context/OrdersContext';
-import { useFonts } from 'expo-font';
-import { SplashScreen } from 'expo-router';
-import { Platform } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import * as SplashScreen from 'expo-splash-screen';
 
-// Prevent the splash screen from auto-hiding
+// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  useFrameworkReady();
+  const colorScheme = useColorScheme();
 
-  const [fontsLoaded, fontError] = useFonts({
-    'SF-Pro-Display-Medium': require('../assets/fonts/SF-Pro-Display-Medium.otf'),
-    'SF-Pro-Display-Regular': require('../assets/fonts/SF-Pro-Display-Regular.otf'),
-    'SF-Pro-Display-Bold': require('../assets/fonts/SF-Pro-Display-Bold.otf'),
-    'SF-Pro-Text-Regular': require('../assets/fonts/SF-Pro-Text-Regular.otf'),
-    'SF-Pro-Text-Medium': require('../assets/fonts/SF-Pro-Text-Medium.otf'),
+  const [loaded, error] = useFonts({
+    'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
+    // Use system fonts as fallbacks for SF fonts
+    'SF-Pro-Display-Bold': require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'SF-Pro-Display-Medium': require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'SF-Pro-Text-Regular': require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'SF-Pro-Text-Medium': require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'SF-Pro-Text-Bold': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if (error) throw error;
+  }, [error]);
+
+  useEffect(() => {
+    if (loaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [loaded]);
 
-  if (!fontsLoaded && !fontError) {
-    return null;
+  if (!loaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (
-    <AuthProvider>
-      <OrdersProvider>
-        <Stack screenOptions={{
-          headerShown: false,
-          animation: Platform.OS === 'ios' ? 'default' : 'fade',
-        }}>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="dark" />
-      </OrdersProvider>
-    </AuthProvider>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <AuthProvider>
+        <OrdersProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </OrdersProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

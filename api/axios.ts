@@ -2,9 +2,6 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL, API_TIMEOUT } from './config';
 
-// Token storage key
-const AUTH_TOKEN_KEY = 'auth_token';
-
 // Create axios instance
 const api = axios.create({
     baseURL: API_URL,
@@ -18,12 +15,17 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     async (config) => {
-        // Get token from secure storage
-        const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-
-        // If token exists, add it to the request headers
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        // Add auth token if available
+        try {
+            const authStateJson = await SecureStore.getItemAsync('auth_state');
+            if (authStateJson) {
+                const authState = JSON.parse(authStateJson);
+                if (authState.token) {
+                    config.headers.Authorization = `Bearer ${authState.token}`;
+                }
+            }
+        } catch (error) {
+            console.error('Error getting auth token:', error);
         }
 
         return config;
@@ -47,50 +49,35 @@ api.interceptors.response.use(
             switch (response.status) {
                 case 401:
                     // Handle unauthorized error
-                    // You might want to redirect to login or refresh token
-                    console.error('Authentication error');
-                    // Could trigger a logout action here
+                    console.error('Autenticación fallida');
+                    // You might want to redirect to login here
                     break;
                 case 403:
                     // Handle forbidden error
-                    console.error('Permission denied');
+                    console.error('Permiso denegado');
                     break;
                 case 404:
                     // Handle not found error
-                    console.error('Resource not found');
-                    break;
-                case 422:
-                    // Validation errors
-                    console.error('Validation error', response.data);
+                    console.error('Recurso no encontrado');
                     break;
                 case 500:
                     // Handle server error
-                    console.error('Server error');
+                    console.error('Error del servidor');
                     break;
                 default:
                     // Handle other errors
-                    console.error(`Request failed with status: ${response.status}`);
+                    console.error(`Petición fallida con estado: ${response.status}`);
             }
         } else if (error.request) {
             // Handle network errors (no response received)
-            console.error('Network error - no response received');
+            console.error('Error de red - No se recibió respuesta');
         } else {
             // Handle other errors
-            console.error('Error setting up request:', error.message);
+            console.error('Error configurando la petición:', error.message);
         }
 
         return Promise.reject(error);
     }
 );
-
-// Helper to set token
-export const setAuthToken = async (token: string) => {
-    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
-};
-
-// Helper to remove token
-export const removeAuthToken = async () => {
-    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-};
 
 export default api;
