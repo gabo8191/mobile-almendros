@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ThemedText } from '@/components/ThemedText';
-import { User } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/Colors';
 
 export function LoginForm() {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     errorText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 14,
         color: colors.error,
         textAlign: 'center',
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     forgotPasswordText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 15,
         color: colors.primary,
     },

@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { getOrders, getOrderById } from '../api/ordersService';
+import { getOrders, getOrderById, cancelOrder } from '../api/ordersService';
 import { Order } from '../types/orders.types';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
@@ -9,7 +9,8 @@ type OrdersContextType = {
     error: string | null;
     refreshing: boolean;
     refreshOrders: () => Promise<void>;
-    getOrderById: (id: string) => Promise<Order | null>;
+    getOrderById: (id: string) => Promise<Order>;
+    cancelOrder: (id: string) => Promise<boolean>;
 };
 
 export const OrdersContext = createContext<OrdersContextType>({
@@ -18,7 +19,12 @@ export const OrdersContext = createContext<OrdersContextType>({
     error: null,
     refreshing: false,
     refreshOrders: async () => { },
-    getOrderById: async () => null,
+    getOrderById: async () => {
+        throw new Error('Not implemented');
+    },
+    cancelOrder: async () => {
+        throw new Error('Not implemented');
+    },
 });
 
 type OrdersProviderProps = {
@@ -77,16 +83,37 @@ export function OrdersProvider({ children }: OrdersProviderProps) {
     };
 
     // Get order by id
-    const fetchOrderById = async (id: string): Promise<Order | null> => {
-        if (!token) return null;
-
+    const fetchOrderById = async (id: string): Promise<Order> => {
         try {
-            const order = await getOrderById(id, token);
-            return order;
+            const result = await getOrderById(id, token || undefined);
+            return result;
         } catch (err) {
             console.error('Failed to fetch order', err);
             setError('No se pudo cargar el pedido. Por favor, intente de nuevo.');
-            return null;
+            throw err;
+        }
+    };
+
+    // Cancel order
+    const handleCancelOrder = async (id: string): Promise<boolean> => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const success = await cancelOrder(id, token || undefined);
+
+            // Refresh the orders list if cancellation was successful
+            if (success) {
+                await fetchOrders();
+            }
+
+            return success;
+        } catch (err) {
+            console.error('Failed to cancel order', err);
+            setError('No se pudo cancelar el pedido. Por favor, intente de nuevo.');
+            throw err;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -99,6 +126,7 @@ export function OrdersProvider({ children }: OrdersProviderProps) {
                 refreshing,
                 refreshOrders,
                 getOrderById: fetchOrderById,
+                cancelOrder: handleCancelOrder,
             }}
         >
             {children}

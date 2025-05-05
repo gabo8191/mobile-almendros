@@ -1,73 +1,66 @@
-import { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedText } from '../ThemedText';
+import React, { useState } from 'react';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity, TextInputProps, StyleProp, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/Colors';
-import { Eye, EyeOff } from 'lucide-react-native';
 
-type InputProps = {
-    label: string;
-    value: string;
-    onChangeText: (text: string) => void;
-    placeholder?: string;
-    secureTextEntry?: boolean;
-    keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad';
+type InputProps = TextInputProps & {
+    label?: string;
     error?: string;
-    autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-    maxLength?: number;
+    containerStyle?: StyleProp<ViewStyle>;
 };
 
 export function Input({
     label,
+    error,
+    secureTextEntry,
+    containerStyle,
     value,
     onChangeText,
-    placeholder,
-    secureTextEntry = false,
-    keyboardType = 'default',
-    error,
-    autoCapitalize = 'none',
-    maxLength,
+    ...rest
 }: InputProps) {
     const [isFocused, setIsFocused] = useState(false);
-    const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const isSecure = secureTextEntry && !isPasswordVisible;
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
     };
 
     return (
-        <View style={styles.container}>
-            <ThemedText style={styles.label}>{label}</ThemedText>
-            <View
-                style={[
-                    styles.inputContainer,
-                    isFocused && styles.focusedInput,
-                    error && styles.errorInput,
-                ]}
-            >
+        <View style={[styles.container, containerStyle]}>
+            {label && <Text style={styles.label}>{label}</Text>}
+
+            <View style={[
+                styles.inputContainer,
+                isFocused && styles.inputFocused,
+                error && styles.inputError
+            ]}>
                 <TextInput
                     style={styles.input}
+                    secureTextEntry={isSecure}
                     value={value}
                     onChangeText={onChangeText}
-                    placeholder={placeholder}
-                    placeholderTextColor="#8E8E93"
-                    secureTextEntry={secureTextEntry && !isPasswordVisible}
-                    keyboardType={keyboardType}
-                    autoCapitalize={autoCapitalize}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    maxLength={maxLength}
+                    placeholderTextColor="#A5A5A7"
+                    {...rest}
                 />
+
                 {secureTextEntry && (
-                    <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeButton}>
+                    <TouchableOpacity
+                        onPress={togglePasswordVisibility}
+                        style={styles.eyeIcon}
+                    >
                         {isPasswordVisible ? (
-                            <EyeOff size={20} color="#8E8E93" />
+                            <Ionicons name="eye-off" size={20} color={colors.textSecondary} />
                         ) : (
-                            <Eye size={20} color="#8E8E93" />
+                            <Ionicons name="eye" size={20} color={colors.textSecondary} />
                         )}
                     </TouchableOpacity>
                 )}
             </View>
-            {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
+
+            {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
     );
 }
@@ -77,43 +70,43 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     label: {
-        fontFamily: 'SF-Pro-Text-Medium',
+        fontFamily: 'System',
         fontSize: 16,
+        fontWeight: '500',
         marginBottom: 8,
+        color: colors.text,
     },
     inputContainer: {
         flexDirection: 'row',
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: '#D1D1D6',
         borderRadius: 12,
-        paddingHorizontal: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFFFFF',
+        overflow: 'hidden',
     },
     input: {
         flex: 1,
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 16,
         paddingVertical: 14,
-        color: '#000',
+        paddingHorizontal: 16,
+        fontFamily: 'System',
+        fontSize: 16,
+        color: colors.text,
     },
-    focusedInput: {
+    inputFocused: {
         borderColor: colors.primary,
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
     },
-    errorInput: {
+    inputError: {
         borderColor: colors.error,
     },
+    eyeIcon: {
+        padding: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     errorText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 14,
         color: colors.error,
         marginTop: 6,
-    },
-    eyeButton: {
-        justifyContent: 'center',
-        paddingLeft: 12,
     },
 });

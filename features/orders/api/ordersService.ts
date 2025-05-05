@@ -105,7 +105,7 @@ export async function getOrders(token: string): Promise<Order[]> {
     }
 }
 
-export async function getOrderById(id: string, token: string): Promise<Order> {
+export async function getOrderById(id: string, token?: string): Promise<Order> {
     try {
         // Simulate API call
         // In a real app, this would be replaced with an actual API call
@@ -128,5 +128,42 @@ export async function getOrderById(id: string, token: string): Promise<Order> {
     } catch (error) {
         console.error('Get order by ID error:', error);
         throw new Error('Error al obtener el pedido');
+    }
+}
+
+export async function cancelOrder(id: string, token?: string): Promise<boolean> {
+    try {
+        // Simulate API call
+        // In a real app, this would be replaced with an actual API call
+        // const response = await api.put(`/orders/${id}/cancel`, {}, {
+        //   headers: { Authorization: `Bearer ${token}` }
+        // });
+        // return response.data;
+
+        // Mock cancel order response for demo
+        return await new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const orderIndex = mockOrders.findIndex(order => order.id === id);
+                if (orderIndex !== -1) {
+                    // Check if the order can be cancelled
+                    const order = mockOrders[orderIndex];
+                    if (order.status === 'pending' || order.status === 'processing') {
+                        // Update the mock data
+                        mockOrders[orderIndex] = {
+                            ...order,
+                            status: 'cancelled'
+                        };
+                        resolve(true);
+                    } else {
+                        reject(new Error('Este pedido no puede ser cancelado'));
+                    }
+                } else {
+                    reject(new Error('Pedido no encontrado'));
+                }
+            }, 1000);
+        });
+    } catch (error) {
+        console.error('Cancel order error:', error);
+        throw new Error('Error al cancelar el pedido');
     }
 }

@@ -3,6 +3,8 @@ export type User = {
     cedula: string;
     name: string;
     email: string;
+    phone?: string;
+    address?: string;
 };
 
 export type LoginCredentials = {
