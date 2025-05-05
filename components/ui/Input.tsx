@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, TextInputProps, StyleProp, ViewStyle } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/Colors';
 
 type InputProps = TextInputProps & {
@@ -52,9 +52,9 @@ export function Input({
                         style={styles.eyeIcon}
                     >
                         {isPasswordVisible ? (
-                            <EyeOff size={20} color={colors.textSecondary} />
+                            <Ionicons name="eye-off" size={20} color={colors.textSecondary} />
                         ) : (
-                            <Eye size={20} color={colors.textSecondary} />
+                            <Ionicons name="eye" size={20} color={colors.textSecondary} />
                         )}
                     </TouchableOpacity>
                 )}

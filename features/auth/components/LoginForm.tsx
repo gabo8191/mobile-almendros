@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ThemedText } from '@/components/ThemedText';
-import { User } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/Colors';
 
 export function LoginForm() {

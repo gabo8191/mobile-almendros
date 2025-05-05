@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useOrders } from '@/features/orders/hooks/useOrders';
 import { OrderCard } from '@/features/orders/components/OrderCard';
 import { Spinner } from '@/components/ui/Spinner';
-import { Package } from 'lucide-react-native';
 import { colors } from '@/constants/Colors';
 
 export default function OrdersScreen() {
@@ -20,7 +20,7 @@ export default function OrdersScreen() {
 
     const renderEmptyList = () => (
         <View style={styles.emptyContainer}>
-            <Package size={64} color={colors.textSecondary} />
+            <Ionicons name="cube-outline" size={64} color={colors.textSecondary} />
             <ThemedText style={styles.emptyText}>No tiene pedidos</ThemedText>
             <ThemedText style={styles.emptySubtext}>
                 Los pedidos que realice aparecerán aquí
@@ -74,8 +74,9 @@ const styles = StyleSheet.create({
         borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     title: {
-        fontFamily: 'SF-Pro-Display-Bold',
+        fontFamily: 'System',
         fontSize: 34,
+        fontWeight: 'bold',
         marginLeft: 4,
     },
     loadingContainer: {
@@ -96,13 +97,14 @@ const styles = StyleSheet.create({
         paddingVertical: 60,
     },
     emptyText: {
-        fontFamily: 'SF-Pro-Display-Medium',
+        fontFamily: 'System',
         fontSize: 18,
+        fontWeight: '500',
         color: colors.textSecondary,
         marginTop: 16,
     },
     emptySubtext: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 15,
         color: colors.textTertiary,
         marginTop: 8,
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     errorText: {
-        fontFamily: 'SF-Pro-Text-Regular',
+        fontFamily: 'System',
         fontSize: 15,
         color: colors.error,
         textAlign: 'center',

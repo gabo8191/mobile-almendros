@@ -19,6 +19,8 @@ export async function login(cedula: string, password: string): Promise<{ user: U
                         cedula: cedula,
                         name: 'Juan Pérez',
                         email: 'juan.perez@ejemplo.com',
+                        phone: '0987654321',
+                        address: 'Calle Principal 123, Quito, Ecuador'
                     },
                     token: 'mock-jwt-token-xyz123',
                 });
