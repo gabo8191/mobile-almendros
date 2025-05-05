@@ -1,23 +1,31 @@
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { API_URL, API_TIMEOUT } from './config';
 
-// Base API URL
-const baseURL = 'https://api.example.com';
+// Token storage key
+const AUTH_TOKEN_KEY = 'auth_token';
 
 // Create axios instance
 const api = axios.create({
-    baseURL,
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
-    timeout: 10000, // 10 seconds
+    timeout: API_TIMEOUT,
 });
 
 // Request interceptor
 api.interceptors.request.use(
-    (config) => {
-        // You can modify the request config here
-        // For example, add authentication token from secure storage
+    async (config) => {
+        // Get token from secure storage
+        const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+
+        // If token exists, add it to the request headers
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
         return config;
     },
     (error) => {
@@ -28,7 +36,6 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
     (response) => {
-        // You can modify the response data here
         return response;
     },
     (error) => {
@@ -39,8 +46,10 @@ api.interceptors.response.use(
             // Handle specific HTTP error codes
             switch (response.status) {
                 case 401:
-                    // Handle unauthorized error (e.g., redirect to login)
+                    // Handle unauthorized error
+                    // You might want to redirect to login or refresh token
                     console.error('Authentication error');
+                    // Could trigger a logout action here
                     break;
                 case 403:
                     // Handle forbidden error
@@ -49,6 +58,10 @@ api.interceptors.response.use(
                 case 404:
                     // Handle not found error
                     console.error('Resource not found');
+                    break;
+                case 422:
+                    // Validation errors
+                    console.error('Validation error', response.data);
                     break;
                 case 500:
                     // Handle server error
@@ -69,5 +82,15 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Helper to set token
+export const setAuthToken = async (token: string) => {
+    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
+};
+
+// Helper to remove token
+export const removeAuthToken = async () => {
+    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+};
 
 export default api;
