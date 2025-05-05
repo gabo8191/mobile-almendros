@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
-import { useOrders } from '@/features/orders/hooks/useOrders';
-import { OrderCard } from '@/features/orders/components/OrderCard';
-import { Spinner } from '@/components/ui/Spinner';
-import { colors } from '@/constants/Colors';
+import { ThemedText } from '@/src/shared/components/ThemedText';
+import { useOrders } from '@/src/features/orders/hooks/useOrders';
+import { OrderCard } from '@/src/features/orders/components/OrderCard';
+import { Spinner } from '@/src/shared/components/ui/Spinner';
+import { colors } from '@/src/constants/Colors';
 
 export default function OrdersScreen() {
     const { orders, loading, error, refreshing, refreshOrders } = useOrders();

@@ -1,26 +1,20 @@
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { colors } from '@/constants/Colors';
+// app/(tabs)/profile.tsx
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { useAuth } from '../../src/shared/context/AuthContext';
+import { colors } from '../../src/constants/Colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
-    const { user, logout, loading } = useAuth();
+    const { user, logout } = useAuth();
 
     const handleLogout = () => {
         Alert.alert(
-            "Cerrar Sesión",
-            "¿Está seguro que desea cerrar su sesión?",
+            'Cerrar Sesión',
+            '¿Está seguro que desea cerrar sesión?',
             [
-                {
-                    text: "Cancelar",
-                    style: "cancel"
-                },
-                {
-                    text: "Cerrar Sesión",
-                    onPress: () => logout(),
-                    style: "destructive"
-                }
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Confirmar', onPress: logout }
             ]
         );
     };
@@ -28,73 +22,52 @@ export default function ProfileScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <ThemedText style={styles.title}>Mi Perfil</ThemedText>
+                <Text style={styles.title}>Mi Perfil</Text>
             </View>
 
-            <View style={styles.content}>
-                <View style={styles.avatarContainer}>
-                    <View style={styles.avatar}>
-                        <Ionicons name="person" size={40} color="#fff" />
+            <ScrollView style={styles.content}>
+                <View style={styles.profileSection}>
+                    <View style={styles.profileHeader}>
+                        <View style={styles.profileAvatar}>
+                            <Text style={styles.avatarText}>
+                                {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+                            </Text>
+                        </View>
+                        <View style={styles.profileInfo}>
+                            <Text style={styles.profileName}>{user?.name || 'Cliente'}</Text>
+                            <Text style={styles.profileId}>
+                                {user?.documentType} {user?.documentNumber}
+                            </Text>
+                        </View>
                     </View>
                 </View>
 
-                <View style={styles.infoContainer}>
-                    <ThemedText style={styles.name}>{user?.name || 'Usuario'}</ThemedText>
-                    <View style={styles.infoCard}>
-                        <View style={styles.infoRow}>
-                            <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
-                            <ThemedText style={styles.infoLabel}>Cédula:</ThemedText>
-                            <ThemedText style={styles.infoValue}>{user?.cedula || 'No disponible'}</ThemedText>
-                        </View>
-
-                        <View style={styles.divider} />
-
-                        <View style={styles.infoRow}>
-                            <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
-                            <ThemedText style={styles.infoLabel}>Email:</ThemedText>
-                            <ThemedText style={styles.infoValue}>{user?.email || 'No disponible'}</ThemedText>
-                        </View>
-
-                        {user?.phone && (
-                            <>
-                                <View style={styles.divider} />
-                                <View style={styles.infoRow}>
-                                    <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
-                                    <ThemedText style={styles.infoLabel}>Teléfono:</ThemedText>
-                                    <ThemedText style={styles.infoValue}>{user.phone}</ThemedText>
-                                </View>
-                            </>
-                        )}
-
-                        {user?.address && (
-                            <>
-                                <View style={styles.divider} />
-                                <View style={styles.infoRow}>
-                                    <Ionicons name="location-outline" size={20} color={colors.textSecondary} style={styles.infoIcon} />
-                                    <ThemedText style={styles.infoLabel}>Dirección:</ThemedText>
-                                    <ThemedText style={styles.infoValue}>{user.address}</ThemedText>
-                                </View>
-                            </>
-                        )}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Información de Contacto</Text>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>Correo Electrónico</Text>
+                        <Text style={styles.infoValue}>{user?.email || 'No registrado'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>Teléfono</Text>
+                        <Text style={styles.infoValue}>{user?.phoneNumber || 'No registrado'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>Dirección</Text>
+                        <Text style={styles.infoValue}>{user?.address || 'No registrada'}</Text>
                     </View>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={handleLogout}
-                    activeOpacity={0.8}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <>
-                            <Ionicons name="log-out-outline" size={20} color="#fff" />
-                            <ThemedText style={styles.logoutText}>Cerrar Sesión</ThemedText>
-                        </>
-                    )}
-                </TouchableOpacity>
-            </View>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Cuenta</Text>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={handleLogout}
+                    >
+                        <Text style={styles.actionButtonText}>Cerrar Sesión</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -102,100 +75,107 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F7',
+        backgroundColor: '#f9f9f9',
     },
     header: {
-        paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 12 : 56,
-        paddingBottom: 8,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
         backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0,0,0,0.05)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
     title: {
-        fontFamily: 'System',
-        fontSize: 34,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginLeft: 4,
+        color: '#333',
     },
     content: {
-        padding: 24,
-        alignItems: 'center',
+        flex: 1,
     },
-    avatarContainer: {
-        marginVertical: 24,
-    },
-    avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    infoContainer: {
-        alignItems: 'center',
-        width: '100%',
-        marginBottom: 32,
-    },
-    name: {
-        fontFamily: 'System',
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 24,
-    },
-    infoCard: {
+    profileSection: {
         backgroundColor: '#fff',
+        marginHorizontal: 16,
+        marginVertical: 16,
         borderRadius: 12,
-        width: '100%',
         padding: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
-        shadowRadius: 8,
+        shadowRadius: 4,
         elevation: 2,
     },
-    infoRow: {
+    profileHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
     },
-    infoIcon: {
-        marginRight: 12,
+    profileAvatar: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    profileInfo: {
+        marginLeft: 16,
+    },
+    profileName: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333',
+    },
+    profileId: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 4,
+    },
+    section: {
+        backgroundColor: '#fff',
+        marginHorizontal: 16,
+        marginBottom: 16,
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 16,
+    },
+    infoItem: {
+        marginBottom: 12,
     },
     infoLabel: {
-        fontFamily: 'System',
-        fontSize: 16,
-        fontWeight: '500',
-        width: 80,
-        color: colors.textSecondary,
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 4,
     },
     infoValue: {
-        fontFamily: 'System',
         fontSize: 16,
-        flex: 1,
+        color: '#333',
     },
-    divider: {
-        height: 1,
-        backgroundColor: 'rgba(0,0,0,0.05)',
-        width: '100%',
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.primary,
+    actionButton: {
         paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderRadius: 12,
-        width: '100%',
-        marginTop: 16,
+        backgroundColor: colors.error,
+        borderRadius: 8,
+        alignItems: 'center',
     },
-    logoutText: {
+    actionButtonText: {
         color: '#fff',
-        fontFamily: 'System',
         fontSize: 16,
         fontWeight: '500',
-        marginLeft: 8,
     },
 });

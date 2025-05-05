@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
-import { colors } from '@/constants/Colors';
-import { useOrders } from '@/features/orders/hooks/useOrders';
-import { OrderItemRow } from '@/features/orders/components/OrderItemRow';
-import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';
-import { Button } from '@/components/ui/Button';
-import { Spinner } from '@/components/ui/Spinner';
-import { formatDate, formatCurrency } from '@/utils/formatters';
-import { Order } from '@/features/orders/types/orders.types';
+import { ThemedText } from '@/src/shared/components/ThemedText';
+import { colors } from '@/src/constants/Colors';
+import { useOrders } from '@/src/features/orders/hooks/useOrders';
+import { OrderItemRow } from '@/src/features/orders/components/OrderItemRow';
+import { OrderStatusBadge } from '@/src/features/orders/components/OrderStatusBadge';
+import { Button } from '@/src/shared/components/ui/Button';
+import { Spinner } from '@/src/shared/components/ui/Spinner';
+import { formatDate, formatCurrency } from '@/src/shared/utils/formatters';
+import { Order } from '@/src/features/orders/types/orders.types';
 
 export default function OrderDetailsScreen() {
     const { id } = useLocalSearchParams();
