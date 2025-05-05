@@ -1,4 +1,3 @@
-// app/(tabs)/profile.tsx
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useAuth } from '@/features/auth/hooks/useAuth';
