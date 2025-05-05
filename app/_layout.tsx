@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
@@ -17,6 +17,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [isReady, setIsReady] = useState(false);
 
   const [loaded, error] = useFonts({
     'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -29,13 +30,19 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync().catch(() => {
-        // Ignore errors
-      });
+      // Add a small delay to ensure everything is initialized properly
+      const timer = setTimeout(() => {
+        SplashScreen.hideAsync().catch(() => {
+          // Ignore errors
+        });
+        setIsReady(true);
+      }, 300);
+
+      return () => clearTimeout(timer);
     }
   }, [loaded]);
 
-  if (!loaded) {
+  if (!loaded || !isReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />

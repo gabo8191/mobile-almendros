@@ -1,0 +1,30 @@
+diff --git a/node_modules/@react-navigation/core/node_modules/nanoid/non-secure/index.cjs b/node_modules/@react-navigation/core/node_modules/nanoid/non-secure/index.cjs
+new file mode 100644
+index 0000000..e3b4596
+--- /dev/null
++++ b/node_modules/@react-navigation/core/node_modules/nanoid/non-secure/index.cjs
+@@ -0,0 +1,24 @@
++// This is a shim for nanoid/non-secure module
++let urlAlphabet =
++  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
++
++/**
++ * Generate URL-friendly unique ID. This method uses the non-secure
++ * predictable random generator with bigger collision probability.
++ *
++ * @param {number} [size=21] The number of symbols in ID.
++ * @returns {string} Random string.
++ */
++module.exports.nanoid = (size = 21) => {
++  let id = ''
++  let i = size
++  while (i--) {
++    id += urlAlphabet[(Math.random() * 64) | 0]
++  }
++  return id
++}
++
++/**
++ * URL safe symbols.
++ */
++module.exports.urlAlphabet = urlAlphabet
