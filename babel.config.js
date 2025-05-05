@@ -3,11 +3,6 @@ module.exports = function (api) {
     return {
         presets: ['babel-preset-expo'],
         plugins: [
-            // Required for expo-router
-            'expo-router/babel',
-            // Reanimated plugin (optional)
-            '@babel/plugin-proposal-export-namespace-from',
-            'react-native-reanimated/plugin',
             // Add path alias support
             [
                 'module-resolver',
@@ -19,6 +14,10 @@ module.exports = function (api) {
                     },
                 },
             ],
+            // Transform export namespace from
+            '@babel/plugin-proposal-export-namespace-from',
+            // Reanimated plugin - this should be last
+            'react-native-reanimated/plugin',
         ],
     };
 };

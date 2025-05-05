@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { router, useSegments, useRootNavigationState } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { login as loginApi } from '../api/authService';
 import { User } from '../types/auth.types';
 
@@ -34,12 +35,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [token, setToken] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [isNavigationReady, setIsNavigationReady] = useState(Platform.OS !== 'web');
     const segments = useSegments();
-    const navigationState = useRootNavigationState();
+
+    // Use simple navigation check for web
+    useEffect(() => {
+        if (Platform.OS === 'web') {
+            // For web, we'll consider navigation ready after a short delay
+            const timer = setTimeout(() => {
+                setIsNavigationReady(true);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     // Check if the user is authenticated and redirect accordingly
     useEffect(() => {
-        if (!navigationState?.key || loading) return;
+        if (!isNavigationReady || loading) return;
 
         const inAuthGroup = segments[0] === '(auth)';
 
@@ -50,13 +62,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
             // If authenticated and on auth screen, redirect to tabs
             router.replace('/(tabs)');
         }
-    }, [user, segments, loading, navigationState?.key]);
+    }, [user, segments, loading, isNavigationReady]);
 
     // Load the auth state from storage when the app loads
     useEffect(() => {
         async function loadAuthState() {
             try {
-                const authStateJson = await SecureStore.getItemAsync(AUTH_KEY);
+                let authStateJson = null;
+                // Use different storage strategy for web and native
+                if (Platform.OS === 'web') {
+                    authStateJson = localStorage.getItem(AUTH_KEY);
+                } else {
+                    authStateJson = await SecureStore.getItemAsync(AUTH_KEY);
+                }
 
                 if (authStateJson) {
                     const authState = JSON.parse(authStateJson);
@@ -78,10 +96,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
             const authState = { user, token };
 
-            if (user && token) {
-                await SecureStore.setItemAsync(AUTH_KEY, JSON.stringify(authState));
+            // Use different storage strategy for web and native
+            if (Platform.OS === 'web') {
+                if (user && token) {
+                    localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
+                } else {
+                    localStorage.removeItem(AUTH_KEY);
+                }
             } else {
-                await SecureStore.deleteItemAsync(AUTH_KEY);
+                if (user && token) {
+                    await SecureStore.setItemAsync(AUTH_KEY, JSON.stringify(authState));
+                } else {
+                    await SecureStore.deleteItemAsync(AUTH_KEY);
+                }
             }
         } catch (e) {
             console.error('Failed to save auth state', e);
