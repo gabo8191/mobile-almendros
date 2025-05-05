@@ -1,26 +1,22 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export const colors = {
+  primary: '#228B22', // Forest green
+  primaryLight: '#4CAF50',
+  primaryDark: '#1B5E20',
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+  success: '#34C759',
+  warning: '#FF9500',
+  error: '#FF3B30',
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+  text: '#000000',
+  textSecondary: '#6E6E73',
+  textTertiary: '#8E8E93',
+
+  background: '#F5F5F7',
+  card: '#FFFFFF',
+  border: '#C6C6C8',
+
+  statusPending: '#FF9500',  // Orange
+  statusProcessing: '#5E5CE6', // Purple
+  statusCompleted: '#34C759', // Green
+  statusCancelled: '#FF3B30', // Red
 };
