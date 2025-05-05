@@ -1,8 +1,9 @@
+// src/api/axios.ts
 import axios from 'axios';
 import { getToken, removeToken } from '../shared/utils/secureStorage';
 
-// Base URL should point to your backend server
-const API_BASE_URL = 'http://your-backend-url.com'; // Change to your actual backend URL
+// Set to your actual backend URL - update when deploying
+const API_BASE_URL = 'http://localhost:3000';
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -11,7 +12,7 @@ const axiosInstance = axios.create({
     },
 });
 
-// Request interceptor - adds auth token to requests
+// Add auth token to requests
 axiosInstance.interceptors.request.use(
     async (config) => {
         const token = await getToken();
@@ -23,14 +24,13 @@ axiosInstance.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor - handles global error responses
+// Handle auth errors
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
-        // Handle 401 Unauthorized errors - clear token and redirect to login
         if (error.response?.status === 401) {
             await removeToken();
-            // You'll implement navigation to login later
+            // Could redirect to login here
         }
         return Promise.reject(error);
     }

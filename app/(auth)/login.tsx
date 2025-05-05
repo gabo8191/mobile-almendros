@@ -1,11 +1,9 @@
-// app/login.tsx
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { useAuth } from '../src/shared/context/AuthContext';
 import { AppInput } from '../src/shared/components/AppInput';
 import { AppButton } from '../src/shared/components/AppButton';
 import { AppLoader } from '../src/shared/components/AppLoader';
-import { loginWithDocument, getClientByDocument } from '../src/features/auth/services/authService';
 import { colors } from '../src/constants/Colors';
 
 export default function LoginScreen() {
@@ -24,21 +22,10 @@ export default function LoginScreen() {
         setError('');
 
         try {
-            // First, get the client by document number
-            const clientResponse = await getClientByDocument(documentNumber);
-
-            if (clientResponse && clientResponse.client) {
-                // Then, attempt login (in a real implementation, this would be proper authentication)
-                const loginResponse = await loginWithDocument(documentNumber);
-
-                // Store token and user data
-                await login(loginResponse.token, clientResponse.client);
-            } else {
-                setError('Cliente no encontrado. Verifique su número de cédula.');
-            }
+            await login(documentNumber);
         } catch (error) {
             console.error('Login error:', error);
-            setError('No se pudo iniciar sesión. Por favor, intente nuevamente.');
+            setError('No se pudo iniciar sesión. Verifique su cédula e intente nuevamente.');
         } finally {
             setIsLoading(false);
         }
@@ -76,6 +63,7 @@ export default function LoginScreen() {
                     <AppButton
                         title="Ingresar"
                         onPress={handleLogin}
+                        isLoading={isLoading}
                         fullWidth
                     />
                 </View>

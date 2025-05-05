@@ -1,16 +1,9 @@
 import axiosInstance from '../../../api/axios';
 import { ENDPOINTS } from '../../../api/endpoints';
 
-export type LoginCredentials = {
-    documentNumber: string;
-};
-
 export const loginWithDocument = async (documentNumber: string) => {
     try {
-        // For the mobile app, we need to add a custom endpoint to the backend
-        // that can authenticate users with just their document number
-        // This endpoint doesn't exist yet in your backend
-        const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, {
+        const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN_MOBILE, {
             documentNumber,
         });
         return response.data;
@@ -20,12 +13,10 @@ export const loginWithDocument = async (documentNumber: string) => {
     }
 };
 
-// Get client by document number
 export const getClientByDocument = async (documentNumber: string) => {
     try {
-        // This endpoint doesn't exist yet in your backend
         const response = await axiosInstance.get(
-            ENDPOINTS.CLIENTS.GET_CLIENT_BY_DOCUMENT(documentNumber)
+            ENDPOINTS.CLIENTS.GET_BY_DOCUMENT(documentNumber)
         );
         return response.data;
     } catch (error) {

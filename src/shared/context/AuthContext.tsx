@@ -1,35 +1,20 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { router } from 'expo-router';
-import {
-    saveToken,
-    getToken,
-    saveUserData,
-    getUserData,
-    clearStorage
-} from '../utils/secureStorage';
+import { loginWithDocument, getClientByDocument } from '../../features/auth/api/authService';
+import { saveToken, getToken, saveUserData, getUserData, clearStorage } from '../utils/secureStorage';
 
-type AuthContextType = {
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    user: any | null;
-    login: (token: string, userData: any) => Promise<void>;
-    logout: () => Promise<void>;
-    checkAuth: () => Promise<boolean>;
-};
+export const AuthContext = createContext(null);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export function AuthProvider({ children }) {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [user, setUser] = useState<any | null>(null);
-
-    // Check for existing auth on app start
     useEffect(() => {
         checkAuth();
     }, []);
 
-    const checkAuth = async (): Promise<boolean> => {
+    const checkAuth = async () => {
         setIsLoading(true);
         try {
             const token = await getToken();
@@ -38,57 +23,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (token && userData) {
                 setIsAuthenticated(true);
                 setUser(userData);
-                return true;
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
-                return false;
             }
         } catch (error) {
             console.error('Auth check error:', error);
-            return false;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const login = async (token: string, userData: any): Promise<void> => {
+    const login = async (documentNumber) => {
+        setIsLoading(true);
         try {
-            await saveToken(token);
-            await saveUserData(userData);
-            setUser(userData);
+            // First get client info by document number
+            const clientResponse = await getClientByDocument(documentNumber);
+
+            if (!clientResponse || !clientResponse.client) {
+                throw new Error('Cliente no encontrado');
+            }
+
+            // Then login to get token
+            const loginResponse = await loginWithDocument(documentNumber);
+
+            if (!loginResponse || !loginResponse.token) {
+                throw new Error('Error al iniciar sesión');
+            }
+
+            // Save token and user data
+            await saveToken(loginResponse.token);
+            await saveUserData(clientResponse.client);
+
+            // Update state
+            setUser(clientResponse.client);
             setIsAuthenticated(true);
-            router.replace('/(tabs)'); // Navigate to main app
         } catch (error) {
             console.error('Login error:', error);
             throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const logout = async (): Promise<void> => {
+    const logout = async () => {
         try {
             await clearStorage();
             setIsAuthenticated(false);
             setUser(null);
-            router.replace('/login'); // Navigate to login
         } catch (error) {
             console.error('Logout error:', error);
         }
     };
 
-    const value = {
-        isAuthenticated,
-        isLoading,
-        user,
-        login,
-        logout,
-        checkAuth,
-    };
+    return (
+        <AuthContext.Provider
+            value={{
+                isAuthenticated,
+                isLoading,
+                user,
+                login,
+                logout,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
+}
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');

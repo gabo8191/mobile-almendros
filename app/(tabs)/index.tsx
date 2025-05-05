@@ -1,29 +1,21 @@
 // app/(tabs)/index.tsx
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  RefreshControl,
-  TouchableOpacity,
-  Alert
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../src/shared/context/AuthContext';
-import { getClientOrders } from '../../src/features/orders/services/ordersService';
+import { getClientOrders } from '../../src/features/orders/api/ordersService';
 import { AppLoader } from '../../src/shared/components/AppLoader';
 import { colors } from '../../src/constants/Colors';
-import { Order } from '../../src/features/orders/services/ordersService';
 import { formatDate, formatCurrency } from '../../src/shared/utils/formatters';
+import { router } from 'expo-router';
 
 export default function OrdersScreen() {
   const { user, logout } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = async () => {
     if (!user || !user.id) return;
 
     try {
@@ -37,49 +29,41 @@ export default function OrdersScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [user]);
+  };
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+  }, [user]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchOrders();
   };
 
-  const handleOrderPress = (order: Order) => {
-    // Show order details in a modal or navigate to details screen
-    Alert.alert(
-      `Compra #${order.id}`,
-      `Estado: ${order.status}\nFecha: ${formatDate(order.date)}\nTotal: ${formatCurrency(order.total)}`,
-      [{ text: 'Cerrar', style: 'cancel' }]
-    );
+  const handleViewOrder = (order) => {
+    router.push(`/order/${order.id}`);
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Está seguro que desea cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Confirmar', onPress: logout }
-      ]
-    );
+    logout();
   };
 
-  const renderOrderItem = ({ item }: { item: Order }) => (
+  if (isLoading) {
+    return <AppLoader message="Cargando compras..." />;
+  }
+
+  const renderOrderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.orderCard}
-      onPress={() => handleOrderPress(item)}
+      onPress={() => handleViewOrder(item)}
     >
       <View style={styles.orderHeader}>
         <Text style={styles.orderNumber}>Compra #{item.id}</Text>
         <View style={[
           styles.statusBadge,
-          item.status === 'Entregado' && styles.deliveredBadge,
-          item.status === 'Pendiente' && styles.pendingBadge,
-          item.status === 'Cancelado' && styles.cancelledBadge,
+          item.status === 'COMPLETED' && styles.deliveredBadge,
+          item.status === 'PENDING' && styles.pendingBadge,
+          item.status === 'CANCELLED' && styles.cancelledBadge,
         ]}>
           <Text style={styles.statusText}>{item.status}</Text>
         </View>
@@ -91,10 +75,6 @@ export default function OrdersScreen() {
       </View>
     </TouchableOpacity>
   );
-
-  if (isLoading) {
-    return <AppLoader message="Cargando compras..." />;
-  }
 
   return (
     <View style={styles.container}>
