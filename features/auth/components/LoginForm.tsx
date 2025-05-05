@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ThemedText } from '@/components/ThemedText';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/Colors';
 
 export function LoginForm() {
@@ -81,11 +80,12 @@ export function LoginForm() {
                     onPress={handleLogin}
                     loading={loading}
                     fullWidth
+                    style={styles.loginButton}
                 />
 
                 <TouchableOpacity style={styles.forgotPassword}>
                     <ThemedText style={styles.forgotPasswordText}>
-                        ¿Olvidó su contraseña?
+                        ¿Olvidaste tu contraseña?
                     </ThemedText>
                 </TouchableOpacity>
             </View>
@@ -111,6 +111,9 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: colors.error,
         textAlign: 'center',
+    },
+    loginButton: {
+        marginTop: 10,
     },
     forgotPassword: {
         marginTop: 16,

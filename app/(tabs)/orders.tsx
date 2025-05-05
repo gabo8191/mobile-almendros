@@ -10,7 +10,7 @@ import { colors } from '@/constants/Colors';
 export default function OrdersScreen() {
     const { orders, loading, error, refreshing, refreshOrders } = useOrders();
 
-    if (loading) {
+    if (loading && !refreshing) {
         return (
             <View style={styles.loadingContainer}>
                 <Spinner size="large" />

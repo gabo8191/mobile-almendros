@@ -8,16 +8,16 @@ export default function LoginScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.logoContainer}>
                 <Image
-                    source={{ uri: 'https://images.pexels.com/photos/6214472/pexels-photo-6214472.jpeg' }}
+                    source={require('@/assets/images/logo.png')}
                     style={styles.logoImage}
                     resizeMode="contain"
                 />
             </View>
 
             <View style={styles.headerContainer}>
-                <ThemedText style={styles.welcomeText}>Bienvenido</ThemedText>
+                <ThemedText style={styles.welcomeText}>Bienvenido a Almendros</ThemedText>
                 <ThemedText style={styles.subtitleText}>
-                    Inicie sesión para ver sus pedidos
+                    Sistema Integral de Gestión de Mercancía de Almendros (SIGMA)
                 </ThemedText>
             </View>
 
@@ -35,13 +35,13 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         alignItems: 'center',
-        marginTop: Platform.OS === 'ios' ? 60 : 40,
-        marginBottom: 20,
+        marginTop: Platform.OS === 'ios' ? 80 : 60,
+        marginBottom: 30,
     },
     logoImage: {
         width: 120,
         height: 120,
-        borderRadius: 20,
+        borderRadius: 12,
     },
     headerContainer: {
         paddingHorizontal: 24,
@@ -49,14 +49,14 @@ const styles = StyleSheet.create({
     },
     welcomeText: {
         fontFamily: 'System',
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         marginBottom: 8,
         textAlign: 'center',
     },
     subtitleText: {
         fontFamily: 'System',
-        fontSize: 17,
+        fontSize: 16,
         color: colors.textSecondary,
         textAlign: 'center',
     },
