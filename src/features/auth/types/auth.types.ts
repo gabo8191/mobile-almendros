@@ -1,12 +1,18 @@
 export type User = {
     id: string;
-    cedula: string;
-    name: string;
     email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    phoneNumber?: string;
+    address?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
 };
 
 export type LoginCredentials = {
-    cedula: string;
+    email: string;
     password: string;
 };
 

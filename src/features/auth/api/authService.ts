@@ -3,10 +3,10 @@ import { ENDPOINTS } from '../../../api/endpoints';
 import { LoginCredentials, User, AuthResponse } from '../types/auth.types';
 import * as SecureStore from 'expo-secure-store';
 
-export const login = async (cedula: string, password: string): Promise<AuthResponse> => {
+export const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
         const credentials: LoginCredentials = {
-            cedula,
+            email,
             password
         };
 

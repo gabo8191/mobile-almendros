@@ -20,9 +20,9 @@ import { Feather } from '@expo/vector-icons';
 import { typography } from '../../src/constants/Typography';
 
 export default function LoginScreen() {
-    const [cedula, setCedula] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [cedulaError, setCedulaError] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -32,15 +32,15 @@ export default function LoginScreen() {
         let isValid = true;
 
         // Reset errors
-        setCedulaError('');
+        setEmailError('');
         setPasswordError('');
 
-        // Validate cedula
-        if (!cedula.trim()) {
-            setCedulaError('La cédula es requerida');
+        // Validate email
+        if (!email.trim()) {
+            setEmailError('El email es requerido');
             isValid = false;
-        } else if (!/^\d+$/.test(cedula)) {
-            setCedulaError('La cédula debe contener solo números');
+        } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+            setEmailError('Formato de email inválido');
             isValid = false;
         }
 
@@ -57,7 +57,7 @@ export default function LoginScreen() {
         Keyboard.dismiss();
 
         if (validateForm()) {
-            await login(cedula, password);
+            await login(email, password);
         }
     };
 
@@ -91,22 +91,22 @@ export default function LoginScreen() {
                     </View>
 
                     <View style={styles.formContainer}>
-                        {/* Input de Cédula */}
+                        {/* Input de Email */}
                         <View style={styles.inputContainer}>
                             <View style={styles.inputWrapper}>
-                                <Feather name="user" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                                <Feather name="mail" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    value={cedula}
-                                    onChangeText={setCedula}
-                                    placeholder="Ingrese su cédula"
-                                    keyboardType="numeric"
-                                    maxLength={10}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    placeholder="Ingrese su email"
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
                                     placeholderTextColor={colors.textTertiary}
                                 />
                             </View>
-                            {cedulaError ? (
-                                <ThemedText style={styles.errorText}>{cedulaError}</ThemedText>
+                            {emailError ? (
+                                <ThemedText style={styles.errorText}>{emailError}</ThemedText>
                             ) : null}
                         </View>
 

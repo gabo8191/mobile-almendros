@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { router, useSegments } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import { User } from '../../features/auth/types/auth.types';
 import { login as loginApi, logout as logoutApi, getCurrentUser, storeUser } from '../../features/auth/api/authService';
 
@@ -8,7 +7,7 @@ type AuthContextType = {
     user: User | null;
     isLoading: boolean;
     error: string | null;
-    login: (cedula: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
 };
 
@@ -63,12 +62,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         loadUser();
     }, []);
 
-    const login = async (cedula: string, password: string) => {
+    const login = async (email: string, password: string) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const response = await loginApi(cedula, password);
+            const response = await loginApi(email, password);
 
             // Save user data
             setUser(response.user);
@@ -105,7 +104,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
 }
 
-// Hook for easy context access
+// Hook para fácil acceso al contexto
 export const useAuth = () => {
     const context = React.useContext(AuthContext);
     if (!context) {

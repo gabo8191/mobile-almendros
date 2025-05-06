@@ -1,6 +1,8 @@
 export const ENDPOINTS = {
     AUTH: {
         LOGIN: '/auth/login',
+        SIGNUP: '/auth/signup',
+        GET_ROLE: '/auth/role',
     },
     CLIENTS: {
         GET_CLIENT: (id: string) => `/clients/${id}`,
