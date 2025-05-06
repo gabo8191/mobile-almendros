@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { colors } from '../../constants/Colors';
-import { Eye, EyeOff } from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 
 type AppInputProps = {
     label: string;
@@ -60,9 +60,9 @@ export function AppInput({
                 {secureTextEntry && (
                     <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeButton}>
                         {isPasswordVisible ? (
-                            <EyeOff size={20} color="#8E8E93" />
+                            <Feather name="eye-off" size={20} color="#8E8E93" />
                         ) : (
-                            <Eye size={20} color="#8E8E93" />
+                            <Feather name="eye" size={20} color="#8E8E93" />
                         )}
                     </TouchableOpacity>
                 )}

@@ -6,7 +6,7 @@ import { AppLoader } from '../../src/shared/components/AppLoader';
 import { OrderCard } from '../../src/features/orders/components/OrderCard';
 import { EmptyState } from '../../src/shared/components/ui/EmptyState';
 import { useOrders } from '../../src/features/orders/context/OrdersContext';
-import { Package } from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 
 export default function OrdersScreen() {
   const { orders, isLoading, isRefreshing, refreshOrders, error } = useOrders();
@@ -51,7 +51,7 @@ export default function OrdersScreen() {
         }
         ListEmptyComponent={
           <EmptyState
-            icon={<Package size={48} color={colors.primary} />}
+            icon={<Feather name="package" size={48} color={colors.primary} />}
             title="No hay pedidos"
             description="No se encontraron pedidos en su cuenta."
           />

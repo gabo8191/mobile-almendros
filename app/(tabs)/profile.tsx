@@ -3,7 +3,7 @@ import { View, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform } fro
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { useAuth } from '../../src/shared/context/AuthContext';
 import { colors } from '../../src/constants/Colors';
-import { LogOut, User } from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
     const { user, logout } = useAuth();
@@ -35,7 +35,7 @@ export default function ProfileScreen() {
             <View style={styles.content}>
                 <View style={styles.avatarContainer}>
                     <View style={styles.avatar}>
-                        <User size={40} color="#fff" />
+                        <Feather name="user" size={40} color="#fff" />
                     </View>
                 </View>
 
@@ -49,7 +49,7 @@ export default function ProfileScreen() {
                     onPress={handleLogout}
                     activeOpacity={0.8}
                 >
-                    <LogOut size={20} color="#fff" />
+                    <Feather name="log-out" size={20} color="#fff" />
                     <ThemedText style={styles.logoutText}>Cerrar Sesión</ThemedText>
                 </TouchableOpacity>
             </View>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     cedula: {
         fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 16,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     logoutButton: {
         flexDirection: 'row',

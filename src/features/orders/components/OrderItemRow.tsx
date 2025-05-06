@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     itemQuantity: {
         fontFamily: 'System',
         fontSize: 14,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     itemPriceContainer: {
         alignItems: 'flex-end',
@@ -58,6 +58,6 @@ const styles = StyleSheet.create({
     itemUnitPrice: {
         fontFamily: 'System',
         fontSize: 13,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
 });

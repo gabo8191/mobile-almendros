@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     description: {
         fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 16,
-        color: colors.textSecondary,
+        color: colors.secondary,
         textAlign: 'center',
     },
 });

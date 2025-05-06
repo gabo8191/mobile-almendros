@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedText } from '../../../src/shared/components/ThemedText';
-import { ChevronLeft, Package } from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../../../src/constants/Colors';
 import { useOrders } from '../../../src/features/orders/context/OrdersContext';
 import { Order } from '../../../src/features/orders/types/orders.types';
@@ -59,13 +59,13 @@ export default function OrderDetailsScreen() {
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <ChevronLeft size={24} color="#000" />
+                        <Feather name="chevron-left" size={24} color="#000" />
                     </TouchableOpacity>
                     <ThemedText style={styles.title}>Detalles</ThemedText>
                     <View style={{ width: 24 }} />
                 </View>
                 <View style={styles.notFoundContainer}>
-                    <Package size={48} color={colors.primary} />
+                    <Feather name="package" size={48} color={colors.primary} />
                     <ThemedText style={styles.notFoundText}>
                         {error || 'Pedido no encontrado'}
                     </ThemedText>
@@ -78,7 +78,7 @@ export default function OrderDetailsScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <ChevronLeft size={24} color="#000" />
+                    <Feather name="chevron-left" size={24} color="#000" />
                 </TouchableOpacity>
                 <ThemedText style={styles.title}>Pedido #{order.orderNumber}</ThemedText>
                 <View style={{ width: 24 }} />
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
         fontFamily: 'SF-Pro-Display-Medium',
         fontSize: 18,
         marginTop: 16,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     scrollContainer: {
         flex: 1,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
         fontFamily: 'SF-Pro-Text-Medium',
         fontSize: 16,
         width: 90,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     infoValue: {
         fontFamily: 'SF-Pro-Text-Regular',
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     summaryLabel: {
         fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 15,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     summaryValue: {
         fontFamily: 'SF-Pro-Text-Regular',

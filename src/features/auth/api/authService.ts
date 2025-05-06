@@ -18,7 +18,7 @@ export const login = async (cedula: string, password: string): Promise<AuthRespo
         }
 
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
         throw new Error(error.response?.data?.message || 'Error durante el inicio de sesión');
     }

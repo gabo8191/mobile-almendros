@@ -34,14 +34,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check if user is authenticated and redirect accordingly
     useEffect(() => {
         if (!isLoading) {
-            const inAuthGroup = segments[0] === '(auth)';
+            const inAuthGroup = segments.length > 0 && segments[0] === "(auth)";
 
             if (!user && !inAuthGroup) {
                 // Redirect to login if not authenticated
-                router.replace('/(auth)/login');
+                router.replace("/(auth)/login" as any); // Usar type assertion para evitar errores
             } else if (user && inAuthGroup) {
                 // Redirect to main app if already authenticated
-                router.replace('/(tabs)');
+                router.replace("/(tabs)" as any);
             }
         }
     }, [user, isLoading, segments]);
@@ -76,8 +76,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await storeUser(response.user);
 
             // Redirect to orders tab
-            router.replace('/(tabs)');
-        } catch (err) {
+            router.replace("/(tabs)" as any);
+        } catch (err: any) {
             setError('Credenciales inválidas. Por favor intente nuevamente.');
             console.error('Login failed:', err);
         } finally {
@@ -91,8 +91,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
             await logoutApi();
             setUser(null);
-            router.replace('/(auth)/login');
-        } catch (err) {
+            router.replace("/(auth)/login" as any);
+        } catch (err: any) {
             console.error('Logout failed:', err);
         } finally {
             setIsLoading(false);

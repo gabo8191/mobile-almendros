@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { colors } from '../../src/constants/Colors';
 import { TabBarBackground } from '../../src/shared/components/ui/TabBarBackground';
 import { OrdersProvider } from '../../src/features/orders/context/OrdersContext';
-import { Package, User } from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -12,7 +12,7 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textSecondary,
+          tabBarInactiveTintColor: colors.secondary,
           tabBarStyle: {
             position: 'absolute',
             borderTopWidth: 0,
@@ -34,7 +34,7 @@ export default function TabLayout() {
           options={{
             title: 'Pedidos',
             tabBarIcon: ({ color, size }) => (
-              <Package size={size} color={color} />
+              <Feather name="package" size={size} color={color} />
             ),
           }}
         />
@@ -43,7 +43,7 @@ export default function TabLayout() {
           options={{
             title: 'Perfil',
             tabBarIcon: ({ color, size }) => (
-              <User size={size} color={color} />
+              <Feather name="user" size={size} color={color} />
             ),
           }}
         />

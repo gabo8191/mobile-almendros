@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Image, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import {
+    View,
+    StyleSheet,
+    SafeAreaView,
+    Image,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard,
+    TouchableOpacity
+} from 'react-native';
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { AppInput } from '../../src/shared/components/AppInput';
 import { AppButton } from '../../src/shared/components/AppButton';
@@ -139,7 +148,7 @@ const styles = StyleSheet.create({
     subtitleText: {
         fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 17,
-        color: colors.textSecondary,
+        color: colors.secondary,
         textAlign: 'center',
     },
     formContainer: {

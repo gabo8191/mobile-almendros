@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedText } from '../../../shared/components/ThemedText';
 import { Order } from '../types/orders.types';
-import { ChevronRight } from '@expo/vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../../../constants/Colors';
 import { formatDate, formatCurrency } from '../../../shared/utils/formatters';
 import { OrderStatusBadge } from './OrderStatusBadge';
@@ -49,7 +49,7 @@ export function OrderCard({ order }: OrderCardProps) {
 
             <View style={styles.footer}>
                 <ThemedText style={styles.viewDetails}>Ver detalles</ThemedText>
-                <ChevronRight size={20} color={colors.primary} />
+                <Feather name="chevron-right" size={20} color={colors.primary} />
             </View>
         </TouchableOpacity>
     );
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 15,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     value: {
         fontFamily: 'SF-Pro-Text-Regular',
