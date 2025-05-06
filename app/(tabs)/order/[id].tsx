@@ -1,104 +1,84 @@
-import { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Platform, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
-import { colors } from '@/constants/Colors';
-import { useOrders } from '@/features/orders/hooks/useOrders';
-import { OrderItemRow } from '@/features/orders/components/OrderItemRow';
-import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';
-import { Button } from '@/components/ui/Button';
-import { Spinner } from '@/components/ui/Spinner';
-import { formatDate, formatCurrency } from '@/utils/formatters';
-import { Order } from '@/features/orders/types/orders.types';
+import { ThemedText } from '../../../src/shared/components/ThemedText';
+import { Feather } from '@expo/vector-icons';
+import { colors } from '../../../src/constants/Colors';
+import { useOrders } from '../../../src/features/orders/context/OrdersContext';
+import { Order } from '../../../src/features/orders/types/orders.types';
+import { OrderItemRow } from '../../../src/features/orders/components/OrderItemRow';
+import { OrderStatusBadge } from '../../../src/features/orders/components/OrderStatusBadge';
+import { AppLoader } from '../../../src/shared/components/AppLoader';
+import { formatDate, formatCurrency } from '../../../src/shared/utils/formatters';
 
 export default function OrderDetailsScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
-    const { getOrderById, cancelOrder, loading } = useOrders();
+    const { getOrderById } = useOrders();
     const [order, setOrder] = useState<Order | null>(null);
-    const [fetchLoading, setFetchLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                setFetchLoading(true);
-                const orderData = await getOrderById(String(id));
-                setOrder(orderData);
-            } catch (error) {
-                console.error('Error fetching order:', error);
+                setIsLoading(true);
+                setError(null);
+
+                if (typeof id !== 'string') {
+                    throw new Error('ID de pedido inválido');
+                }
+
+                const orderData = await getOrderById(id);
+                if (orderData) {
+                    setOrder(orderData);
+                } else {
+                    setError('No se pudo encontrar el pedido');
+                }
+            } catch (err) {
+                console.error('Error fetching order:', err);
+                setError('Error al cargar el pedido');
             } finally {
-                setFetchLoading(false);
+                setIsLoading(false);
             }
         };
 
         fetchOrder();
     }, [id, getOrderById]);
 
-    const handleCancelOrder = () => {
-        if (!order) return;
-
-        Alert.alert(
-            "Cancelar Pedido",
-            "¿Está seguro que desea cancelar este pedido?",
-            [
-                {
-                    text: "No",
-                    style: "cancel"
-                },
-                {
-                    text: "Sí, Cancelar",
-                    onPress: async () => {
-                        try {
-                            await cancelOrder(order.id);
-                            // Fetch the updated order
-                            const updatedOrder = await getOrderById(String(id));
-                            setOrder(updatedOrder);
-                            Alert.alert("Éxito", "El pedido ha sido cancelado");
-                        } catch (error) {
-                            console.error('Error canceling order:', error);
-                            Alert.alert("Error", "No se pudo cancelar el pedido");
-                        }
-                    },
-                    style: "destructive"
-                }
-            ]
-        );
-    };
-
-    if (fetchLoading) {
+    if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <Spinner size="large" />
+                <AppLoader size="large" />
             </View>
         );
     }
 
-    if (!order) {
+    if (error || !order) {
         return (
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="chevron-back" size={24} color="#000" />
+                        <Feather name="chevron-left" size={24} color="#000" />
                     </TouchableOpacity>
                     <ThemedText style={styles.title}>Detalles</ThemedText>
                     <View style={{ width: 24 }} />
                 </View>
                 <View style={styles.notFoundContainer}>
-                    <Ionicons name="cube-outline" size={48} color={colors.primary} />
-                    <ThemedText style={styles.notFoundText}>Pedido no encontrado</ThemedText>
+                    <Feather name="package" size={48} color={colors.primary} />
+                    <ThemedText style={styles.notFoundText}>
+                        {error || 'Pedido no encontrado'}
+                    </ThemedText>
                 </View>
             </SafeAreaView>
         );
     }
 
-    const canCancel = order.status === 'pending' || order.status === 'processing';
-
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Feather name="chevron-left" size={24} color="#000" />
                 </TouchableOpacity>
                 <ThemedText style={styles.title}>Pedido #{order.orderNumber}</ThemedText>
                 <View style={{ width: 24 }} />
@@ -124,18 +104,6 @@ export default function OrderDetailsScreen() {
                         <ThemedText style={styles.infoLabel}>Dirección:</ThemedText>
                         <ThemedText style={styles.infoValue}>{order.address}</ThemedText>
                     </View>
-
-                    {canCancel && (
-                        <View style={styles.cancelButtonContainer}>
-                            <Button
-                                title="Cancelar Pedido"
-                                onPress={handleCancelOrder}
-                                variant="outline"
-                                loading={loading}
-                                fullWidth
-                            />
-                        </View>
-                    )}
                 </View>
 
                 <View style={styles.sectionCard}>
@@ -197,9 +165,8 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     title: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Display-Bold',
         fontSize: 20,
-        fontWeight: 'bold',
     },
     loadingContainer: {
         flex: 1,
@@ -212,11 +179,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     notFoundText: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Display-Medium',
         fontSize: 18,
-        fontWeight: '500',
         marginTop: 16,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     scrollContainer: {
         flex: 1,
@@ -237,9 +203,8 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     sectionTitle: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Display-Bold',
         fontSize: 18,
-        fontWeight: 'bold',
         marginBottom: 16,
     },
     orderHeaderRow: {
@@ -253,19 +218,15 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     infoLabel: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Medium',
         fontSize: 16,
-        fontWeight: '500',
         width: 90,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     infoValue: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 16,
         flex: 1,
-    },
-    cancelButtonContainer: {
-        marginTop: 16,
     },
     divider: {
         height: 1,
@@ -278,30 +239,28 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     summaryLabel: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 15,
-        color: colors.textSecondary,
+        color: colors.secondary,
     },
     summaryValue: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 15,
     },
     totalRow: {
         marginTop: 8,
     },
     totalLabel: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Bold',
         fontSize: 18,
-        fontWeight: 'bold',
     },
     totalValue: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Display-Bold',
         fontSize: 18,
-        fontWeight: 'bold',
         color: colors.primary,
     },
     paymentMethod: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 16,
     },
 });
