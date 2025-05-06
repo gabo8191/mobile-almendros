@@ -1,72 +1,119 @@
-import React from 'react';
-import {
-    TextInput,
-    View,
-    Text,
-    StyleSheet,
-    TextInputProps
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { ThemedText } from './ThemedText';
 import { colors } from '../../constants/Colors';
+import { Eye, EyeOff } from '@expo/vector-icons/Feather';
 
-type AppInputProps = TextInputProps & {
-    label?: string;
+type AppInputProps = {
+    label: string;
+    value: string;
+    onChangeText: (text: string) => void;
+    placeholder?: string;
+    secureTextEntry?: boolean;
+    keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad';
     error?: string;
-    fullWidth?: boolean;
+    autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+    maxLength?: number;
 };
 
-export const AppInput: React.FC<AppInputProps> = ({
+export function AppInput({
     label,
+    value,
+    onChangeText,
+    placeholder,
+    secureTextEntry = false,
+    keyboardType = 'default',
     error,
-    fullWidth = false,
-    style,
-    ...rest
-}) => {
+    autoCapitalize = 'none',
+    maxLength,
+}: AppInputProps) {
+    const [isFocused, setIsFocused] = useState(false);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry);
+
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible(!isPasswordVisible);
+    };
+
     return (
-        <View style={[styles.container, fullWidth && styles.fullWidth]}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <TextInput
+        <View style={styles.container}>
+            <ThemedText style={styles.label}>{label}</ThemedText>
+            <View
                 style={[
-                    styles.input,
-                    error ? styles.inputError : null,
-                    style,
+                    styles.inputContainer,
+                    isFocused && styles.focusedInput,
+                    error && styles.errorInput,
                 ]}
-                placeholderTextColor="#999"
-                {...rest}
-            />
-            {error && <Text style={styles.errorText}>{error}</Text>}
+            >
+                <TextInput
+                    style={styles.input}
+                    value={value}
+                    onChangeText={onChangeText}
+                    placeholder={placeholder}
+                    placeholderTextColor="#8E8E93"
+                    secureTextEntry={secureTextEntry && !isPasswordVisible}
+                    keyboardType={keyboardType}
+                    autoCapitalize={autoCapitalize}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    maxLength={maxLength}
+                />
+                {secureTextEntry && (
+                    <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeButton}>
+                        {isPasswordVisible ? (
+                            <EyeOff size={20} color="#8E8E93" />
+                        ) : (
+                            <Eye size={20} color="#8E8E93" />
+                        )}
+                    </TouchableOpacity>
+                )}
+            </View>
+            {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 16,
-    },
-    fullWidth: {
-        width: '100%',
+        marginBottom: 20,
     },
     label: {
+        fontFamily: 'SF-Pro-Text-Medium',
+        fontSize: 16,
         marginBottom: 8,
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#333',
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        backgroundColor: '#fff',
     },
     input: {
-        height: 48,
-        paddingHorizontal: 16,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        backgroundColor: '#fff',
+        flex: 1,
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 16,
-        color: '#333',
+        paddingVertical: 14,
+        color: '#000',
     },
-    inputError: {
+    focusedInput: {
+        borderColor: colors.primary,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    errorInput: {
         borderColor: colors.error,
     },
     errorText: {
-        marginTop: 4,
-        fontSize: 12,
+        fontFamily: 'SF-Pro-Text-Regular',
+        fontSize: 14,
         color: colors.error,
+        marginTop: 6,
+    },
+    eyeButton: {
+        justifyContent: 'center',
+        paddingLeft: 12,
     },
 });

@@ -1,10 +1,17 @@
-import { View } from 'react-native';
+import React from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 
-// This is a simple background for web and Android where the tab bar is opaque
-export default function TabBarBackground() {
-    return null;
-}
+export function TabBarBackground() {
+    if (Platform.OS === 'ios') {
+        return (
+            <BlurView
+                tint="light"
+                intensity={95}
+                style={StyleSheet.absoluteFill}
+            />
+        );
+    }
 
-export function useBottomTabOverflow() {
-    return 0;
+    return <View style={[StyleSheet.absoluteFill, { backgroundColor: '#fff' }]} />;
 }

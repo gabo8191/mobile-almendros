@@ -3,8 +3,6 @@ export type User = {
     cedula: string;
     name: string;
     email: string;
-    phone?: string;
-    address?: string;
 };
 
 export type LoginCredentials = {
@@ -12,9 +10,15 @@ export type LoginCredentials = {
     password: string;
 };
 
+export type AuthResponse = {
+    message: string;
+    user: User;
+    token: string;
+};
+
 export type AuthState = {
     user: User | null;
     token: string | null;
-    loading: boolean;
+    isLoading: boolean;
     error: string | null;
 };

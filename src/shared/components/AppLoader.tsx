@@ -1,37 +1,44 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { colors } from '../../constants/Colors';
 
 type AppLoaderProps = {
-    message?: string;
+    size?: 'small' | 'large';
+    color?: string;
+    fullScreen?: boolean;
 };
 
-export const AppLoader: React.FC<AppLoaderProps> = ({ message }) => {
+export function AppLoader({
+    size = 'large',
+    color = colors.primary,
+    fullScreen = false
+}: AppLoaderProps) {
+    if (fullScreen) {
+        return (
+            <View style={styles.fullScreen}>
+                <ActivityIndicator size={size} color={color} />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            {message && <Text style={styles.message}>{message}</Text>}
+            <ActivityIndicator size={size} color={color} />
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        padding: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1000,
     },
-    message: {
-        marginTop: 12,
-        fontSize: 14,
-        color: '#333',
-        textAlign: 'center',
+    fullScreen: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 999,
     },
 });

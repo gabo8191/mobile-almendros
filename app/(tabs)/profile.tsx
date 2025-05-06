@@ -1,20 +1,27 @@
-// app/(tabs)/profile.tsx
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { ThemedText } from '../../src/shared/components/ThemedText';
 import { useAuth } from '../../src/shared/context/AuthContext';
 import { colors } from '../../src/constants/Colors';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LogOut, User } from '@expo/vector-icons/Feather';
 
 export default function ProfileScreen() {
     const { user, logout } = useAuth();
 
     const handleLogout = () => {
         Alert.alert(
-            'Cerrar Sesión',
-            '¿Está seguro que desea cerrar sesión?',
+            "Cerrar Sesión",
+            "¿Está seguro que desea cerrar su sesión?",
             [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Confirmar', onPress: logout }
+                {
+                    text: "Cancelar",
+                    style: "cancel"
+                },
+                {
+                    text: "Cerrar Sesión",
+                    onPress: () => logout(),
+                    style: "destructive"
+                }
             ]
         );
     };
@@ -22,52 +29,30 @@ export default function ProfileScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Mi Perfil</Text>
+                <ThemedText style={styles.title}>Mi Perfil</ThemedText>
             </View>
 
-            <ScrollView style={styles.content}>
-                <View style={styles.profileSection}>
-                    <View style={styles.profileHeader}>
-                        <View style={styles.profileAvatar}>
-                            <Text style={styles.avatarText}>
-                                {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
-                            </Text>
-                        </View>
-                        <View style={styles.profileInfo}>
-                            <Text style={styles.profileName}>{user?.name || 'Cliente'}</Text>
-                            <Text style={styles.profileId}>
-                                {user?.documentType} {user?.documentNumber}
-                            </Text>
-                        </View>
+            <View style={styles.content}>
+                <View style={styles.avatarContainer}>
+                    <View style={styles.avatar}>
+                        <User size={40} color="#fff" />
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Información de Contacto</Text>
-                    <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>Correo Electrónico</Text>
-                        <Text style={styles.infoValue}>{user?.email || 'No registrado'}</Text>
-                    </View>
-                    <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>Teléfono</Text>
-                        <Text style={styles.infoValue}>{user?.phoneNumber || 'No registrado'}</Text>
-                    </View>
-                    <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>Dirección</Text>
-                        <Text style={styles.infoValue}>{user?.address || 'No registrada'}</Text>
-                    </View>
+                <View style={styles.infoContainer}>
+                    <ThemedText style={styles.name}>{user?.name || 'Usuario'}</ThemedText>
+                    <ThemedText style={styles.cedula}>Cédula: {user?.cedula || '0000000000'}</ThemedText>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Cuenta</Text>
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={handleLogout}
-                    >
-                        <Text style={styles.actionButtonText}>Cerrar Sesión</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                <TouchableOpacity
+                    style={styles.logoutButton}
+                    onPress={handleLogout}
+                    activeOpacity={0.8}
+                >
+                    <LogOut size={20} color="#fff" />
+                    <ThemedText style={styles.logoutText}>Cerrar Sesión</ThemedText>
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
     );
 }
@@ -75,107 +60,65 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#F5F5F7',
     },
     header: {
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'ios' ? 12 : 56,
+        paddingBottom: 8,
         backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
+        fontFamily: 'SF-Pro-Display-Bold',
+        fontSize: 34,
+        marginLeft: 4,
     },
     content: {
-        flex: 1,
-    },
-    profileSection: {
-        backgroundColor: '#fff',
-        marginHorizontal: 16,
-        marginVertical: 16,
-        borderRadius: 12,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    profileHeader: {
-        flexDirection: 'row',
+        padding: 24,
         alignItems: 'center',
     },
-    profileAvatar: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
+    avatarContainer: {
+        marginVertical: 24,
+    },
+    avatar: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
         backgroundColor: colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    avatarText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
-    },
-    profileInfo: {
-        marginLeft: 16,
-    },
-    profileName: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-    },
-    profileId: {
-        fontSize: 14,
-        color: '#666',
-        marginTop: 4,
-    },
-    section: {
-        backgroundColor: '#fff',
-        marginHorizontal: 16,
-        marginBottom: 16,
-        borderRadius: 12,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 16,
-    },
-    infoItem: {
-        marginBottom: 12,
-    },
-    infoLabel: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 4,
-    },
-    infoValue: {
-        fontSize: 16,
-        color: '#333',
-    },
-    actionButton: {
-        paddingVertical: 12,
-        backgroundColor: colors.error,
-        borderRadius: 8,
+    infoContainer: {
         alignItems: 'center',
+        marginBottom: 48,
     },
-    actionButtonText: {
-        color: '#fff',
+    name: {
+        fontFamily: 'SF-Pro-Display-Bold',
+        fontSize: 24,
+        marginBottom: 8,
+    },
+    cedula: {
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 16,
-        fontWeight: '500',
+        color: colors.textSecondary,
+    },
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.primary,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        width: '100%',
+        marginTop: 16,
+    },
+    logoutText: {
+        color: '#fff',
+        fontFamily: 'SF-Pro-Text-Medium',
+        fontSize: 16,
+        marginLeft: 8,
     },
 });

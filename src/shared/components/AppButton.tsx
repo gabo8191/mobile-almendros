@@ -1,36 +1,34 @@
 import React from 'react';
-import {
-    TouchableOpacity,
-    Text,
-    StyleSheet,
-    ActivityIndicator,
-    TouchableOpacityProps
-} from 'react-native';
-import { colors } from '@/src/constants/Colors';
+import { TouchableOpacity, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { ThemedText } from './ThemedText';
+import { colors } from '../../constants/Colors';
 
-type AppButtonProps = TouchableOpacityProps & {
+type AppButtonProps = {
     title: string;
-    isLoading?: boolean;
-    variant?: 'primary' | 'secondary' | 'outlined';
+    onPress: () => void;
+    variant?: 'primary' | 'secondary' | 'outline';
+    disabled?: boolean;
+    loading?: boolean;
     fullWidth?: boolean;
+    style?: any;
 };
 
-export const AppButton: React.FC<AppButtonProps> = ({
+export function AppButton({
     title,
-    isLoading = false,
+    onPress,
     variant = 'primary',
-    fullWidth = false,
+    disabled = false,
+    loading = false,
+    fullWidth = true,
     style,
-    disabled,
-    ...rest
-}) => {
+}: AppButtonProps) {
     const buttonStyles = [
         styles.button,
         variant === 'primary' && styles.primaryButton,
         variant === 'secondary' && styles.secondaryButton,
-        variant === 'outlined' && styles.outlinedButton,
+        variant === 'outline' && styles.outlineButton,
+        disabled && styles.disabledButton,
         fullWidth && styles.fullWidth,
-        disabled && styles.disabled,
         style,
     ];
 
@@ -38,72 +36,67 @@ export const AppButton: React.FC<AppButtonProps> = ({
         styles.text,
         variant === 'primary' && styles.primaryText,
         variant === 'secondary' && styles.secondaryText,
-        variant === 'outlined' && styles.outlinedText,
+        variant === 'outline' && styles.outlineText,
         disabled && styles.disabledText,
     ];
 
     return (
         <TouchableOpacity
             style={buttonStyles}
-            disabled={disabled || isLoading}
-            {...rest}
+            onPress={onPress}
+            disabled={disabled || loading}
+            activeOpacity={0.8}
         >
-            {isLoading ? (
-                <ActivityIndicator
-                    color={variant === 'outlined' ? colors.primary : '#fff'}
-                    size="small"
-                />
+            {loading ? (
+                <ActivityIndicator color={variant === 'outline' ? colors.primary : '#fff'} />
             ) : (
-                <Text style={textStyles}>{title}</Text>
+                <ThemedText style={textStyles}>{title}</ThemedText>
             )}
         </TouchableOpacity>
     );
-};
+}
 
 const styles = StyleSheet.create({
     button: {
-        paddingVertical: 12,
+        paddingVertical: 14,
         paddingHorizontal: 24,
-        borderRadius: 8,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        flexDirection: 'row',
     },
     primaryButton: {
         backgroundColor: colors.primary,
     },
     secondaryButton: {
-        backgroundColor: colors.secondary,
+        backgroundColor: 'rgba(34, 139, 34, 0.1)',
     },
-    outlinedButton: {
+    outlineButton: {
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: colors.primary,
     },
+    disabledButton: {
+        backgroundColor: '#E5E5EA',
+        borderColor: '#E5E5EA',
+    },
     fullWidth: {
         width: '100%',
     },
-    disabled: {
-        opacity: 0.6,
-    },
     text: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: 'SF-Pro-Text-Medium',
     },
     primaryText: {
         color: '#fff',
     },
     secondaryText: {
-        color: '#fff',
+        color: colors.primary,
     },
-    outlinedText: {
+    outlineText: {
         color: colors.primary,
     },
     disabledText: {
-        color: '#888',
+        color: '#8E8E93',
     },
 });

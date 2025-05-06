@@ -1,34 +1,59 @@
 import * as SecureStore from 'expo-secure-store';
 
-const TOKEN_KEY = 'auth_token';
-const USER_DATA_KEY = 'user_data';
-
-export const saveToken = async (token: string): Promise<void> => {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+// Keys
+export const KEYS = {
+    AUTH_TOKEN: 'auth_token',
+    AUTH_USER: 'auth_user',
 };
 
-export const getToken = async (): Promise<string | null> => {
-    return await SecureStore.getItemAsync(TOKEN_KEY);
-};
+// Save item to secure storage
+export async function saveItem(key: string, value: string): Promise<void> {
+    try {
+        await SecureStore.setItemAsync(key, value);
+    } catch (error) {
+        console.error(`Error saving ${key} to secure storage:`, error);
+        throw error;
+    }
+}
 
-export const removeToken = async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-};
+// Get item from secure storage
+export async function getItem(key: string): Promise<string | null> {
+    try {
+        return await SecureStore.getItemAsync(key);
+    } catch (error) {
+        console.error(`Error getting ${key} from secure storage:`, error);
+        return null;
+    }
+}
 
-export const saveUserData = async (userData: any): Promise<void> => {
-    await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(userData));
-};
+// Delete item from secure storage
+export async function deleteItem(key: string): Promise<void> {
+    try {
+        await SecureStore.deleteItemAsync(key);
+    } catch (error) {
+        console.error(`Error deleting ${key} from secure storage:`, error);
+        throw error;
+    }
+}
 
-export const getUserData = async (): Promise<any | null> => {
-    const data = await SecureStore.getItemAsync(USER_DATA_KEY);
-    return data ? JSON.parse(data) : null;
-};
+// Save object to secure storage
+export async function saveObject<T>(key: string, value: T): Promise<void> {
+    try {
+        const jsonValue = JSON.stringify(value);
+        await saveItem(key, jsonValue);
+    } catch (error) {
+        console.error(`Error saving object ${key} to secure storage:`, error);
+        throw error;
+    }
+}
 
-export const removeUserData = async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(USER_DATA_KEY);
-};
-
-export const clearStorage = async (): Promise<void> => {
-    await removeToken();
-    await removeUserData();
-};
+// Get object from secure storage
+export async function getObject<T>(key: string): Promise<T | null> {
+    try {
+        const jsonValue = await getItem(key);
+        return jsonValue ? JSON.parse(jsonValue) : null;
+    } catch (error) {
+        console.error(`Error getting object ${key} from secure storage:`, error);
+        return null;
+    }
+}

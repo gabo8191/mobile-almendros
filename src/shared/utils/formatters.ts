@@ -1,16 +1,18 @@
-export const formatDate = (dateString: string): string => {
+export function formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-CO', {
+    const options: Intl.DateTimeFormatOptions = {
         year: 'numeric',
         month: 'long',
-        day: 'numeric',
-    });
-};
+        day: 'numeric'
+    };
 
-export const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('es-CO', {
+    return date.toLocaleDateString('es-ES', options);
+}
+
+export function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-EC', {
         style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
+        currency: 'USD',
+        minimumFractionDigits: 2,
     }).format(amount);
-};
+}

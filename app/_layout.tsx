@@ -1,61 +1,46 @@
 import { useEffect } from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { AuthProvider, useAuth } from '../src/shared/context/AuthContext';
-import { useColorScheme } from '../src/shared/hooks/useColorScheme';
-import { AppLoader } from '../src/shared/components/AppLoader';
+import { useFonts } from 'expo-font';
+import { SplashScreen } from 'expo-router';
+import { Platform } from 'react-native';
+import { AuthProvider } from '../src/shared/context/AuthContext';
+import { useFrameworkReady } from '../src/shared/hooks/UseFrameworkReady';
 
-// Authentication route guard
-function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isLoading) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const isLoginRoute = segments[0] === 'login';
-
-    if (!isAuthenticated && !isLoginRoute && !inAuthGroup) {
-      // Redirect to login if not authenticated
-      router.replace('/login');
-    } else if (isAuthenticated && (isLoginRoute || inAuthGroup)) {
-      // Redirect to home if already authenticated
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated, isLoading, segments, router]);
-
-  if (isLoading) {
-    return <AppLoader message="Cargando..." />;
-  }
-
-  return <>{children}</>;
-}
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  useFrameworkReady();
+
+  const [fontsLoaded, fontError] = useFonts({
+    'SF-Pro-Display-Medium': require('../assets/fonts/SF-Pro-Display-Medium.otf'),
+    'SF-Pro-Display-Regular': require('../assets/fonts/SF-Pro-Display-Regular.otf'),
+    'SF-Pro-Display-Bold': require('../assets/fonts/SF-Pro-Display-Bold.otf'),
+    'SF-Pro-Text-Regular': require('../assets/fonts/SF-Pro-Text-Regular.otf'),
+    'SF-Pro-Text-Medium': require('../assets/fonts/SF-Pro-Text-Medium.otf'),
   });
 
-  if (!loaded) {
-    return <AppLoader />;
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
   }
 
   return (
     <AuthProvider>
-      <SafeAreaProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <AuthGuard>
-            <StatusBar style="auto" />
-            <Slot />
-          </AuthGuard>
-        </ThemeProvider>
-      </SafeAreaProvider>
+      <Stack screenOptions={{
+        headerShown: false,
+        animation: Platform.OS === 'ios' ? 'default' : 'fade',
+      }}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+      <StatusBar style="dark" />
     </AuthProvider>
   );
 }

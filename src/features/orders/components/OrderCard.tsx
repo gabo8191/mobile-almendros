@@ -1,11 +1,12 @@
+import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/src/shared/components/ThemedText';
-import { Order } from '../types/orders.types';
-import { colors } from '@/src/constants/Colors';
-import { formatDate, formatCurrency } from '@/src/shared/utils/formatters';
-import { OrderStatusBadge } from './OrderStatusBadge';
 import { router } from 'expo-router';
+import { ThemedText } from '../../../shared/components/ThemedText';
+import { Order } from '../types/orders.types';
+import { ChevronRight } from '@expo/vector-icons/Feather';
+import { colors } from '../../../constants/Colors';
+import { formatDate, formatCurrency } from '../../../shared/utils/formatters';
+import { OrderStatusBadge } from './OrderStatusBadge';
 
 type OrderCardProps = {
     order: Order;
@@ -48,7 +49,7 @@ export function OrderCard({ order }: OrderCardProps) {
 
             <View style={styles.footer}>
                 <ThemedText style={styles.viewDetails}>Ver detalles</ThemedText>
-                <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+                <ChevronRight size={20} color={colors.primary} />
             </View>
         </TouchableOpacity>
     );
@@ -76,9 +77,8 @@ const styles = StyleSheet.create({
         borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     orderNumber: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Display-Bold',
         fontSize: 18,
-        fontWeight: 'bold',
     },
     content: {
         paddingVertical: 12,
@@ -90,18 +90,17 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     label: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 15,
         color: colors.textSecondary,
     },
     value: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Regular',
         fontSize: 15,
     },
     total: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Display-Bold',
         fontSize: 16,
-        fontWeight: 'bold',
         color: colors.primary,
     },
     footer: {
@@ -113,9 +112,8 @@ const styles = StyleSheet.create({
         borderTopColor: 'rgba(0,0,0,0.05)',
     },
     viewDetails: {
-        fontFamily: 'System',
+        fontFamily: 'SF-Pro-Text-Medium',
         fontSize: 14,
-        fontWeight: '500',
         color: colors.primary,
         marginRight: 4,
     },
