@@ -89,10 +89,12 @@ export default function ProfileScreen() {
                     </View>
 
                     <View style={styles.infoContainer}>
-                        <ThemedText style={styles.name}>{user?.name || 'Usuario'}</ThemedText>
-                        <View style={styles.cedulaContainer}>
-                            <Feather name="credit-card" size={14} color={colors.textSecondary} style={styles.cedulaIcon} />
-                            <ThemedText style={styles.cedula}>Cédula: {user?.cedula || '0000000000'}</ThemedText>
+                        <ThemedText style={styles.name}>
+                            {user?.firstName} {user?.lastName || 'Usuario'}
+                        </ThemedText>
+                        <View style={styles.emailContainer}>
+                            <Feather name="mail" size={14} color={colors.textSecondary} style={styles.emailIcon} />
+                            <ThemedText style={styles.email}>{user?.email || 'email@example.com'}</ThemedText>
                         </View>
                     </View>
                 </View>
@@ -197,14 +199,14 @@ const styles = StyleSheet.create({
         color: colors.text,
         marginBottom: 8,
     },
-    cedulaContainer: {
+    emailContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    cedulaIcon: {
+    emailIcon: {
         marginRight: 6,
     },
-    cedula: {
+    email: {
         fontFamily: typography.fontFamily.sans,
         fontSize: typography.sizes.body,
         color: colors.textSecondary,

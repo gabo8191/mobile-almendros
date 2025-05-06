@@ -1,12 +1,12 @@
 import api from '../../../api/axios';
 import { ENDPOINTS } from '../../../api/endpoints';
 import { LoginCredentials, User, AuthResponse } from '../types/auth.types';
-import * as SecureStore from 'expo-secure-store';
+import { saveItem, getItem, deleteItem, getObject, saveObject, KEYS } from '../../../shared/utils/secureStorage';
 
-export const login = async (cedula: string, password: string): Promise<AuthResponse> => {
+export const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
         const credentials: LoginCredentials = {
-            cedula,
+            email,
             password
         };
 
@@ -14,7 +14,8 @@ export const login = async (cedula: string, password: string): Promise<AuthRespo
 
         // Store the token for future requests
         if (response.data.token) {
-            await SecureStore.setItemAsync('auth_token', response.data.token);
+            await saveItem(KEYS.AUTH_TOKEN, response.data.token);
+            await saveObject(KEYS.AUTH_USER, response.data.user);
         }
 
         return response.data;
@@ -26,8 +27,8 @@ export const login = async (cedula: string, password: string): Promise<AuthRespo
 
 export const logout = async (): Promise<void> => {
     try {
-        await SecureStore.deleteItemAsync('auth_token');
-        await SecureStore.deleteItemAsync('auth_user');
+        await deleteItem(KEYS.AUTH_TOKEN);
+        await deleteItem(KEYS.AUTH_USER);
     } catch (error) {
         console.error('Logout error:', error);
         throw new Error('Error al cerrar sesión');
@@ -36,11 +37,7 @@ export const logout = async (): Promise<void> => {
 
 export const getCurrentUser = async (): Promise<User | null> => {
     try {
-        const userJson = await SecureStore.getItemAsync('auth_user');
-        if (userJson) {
-            return JSON.parse(userJson);
-        }
-        return null;
+        return await getObject<User>(KEYS.AUTH_USER);
     } catch (error) {
         console.error('Get current user error:', error);
         return null;
@@ -49,7 +46,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
 
 export const storeUser = async (user: User): Promise<void> => {
     try {
-        await SecureStore.setItemAsync('auth_user', JSON.stringify(user));
+        await saveObject(KEYS.AUTH_USER, user);
     } catch (error) {
         console.error('Store user error:', error);
     }
