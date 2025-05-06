@@ -48,17 +48,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
         async function loadUser() {
             try {
-                const savedUser = await getCurrentUser();
-                if (savedUser) {
-                    setUser(savedUser);
-                }
+                await logoutApi();
+                setUser(null);
+                setIsLoading(false);
             } catch (err) {
                 console.error('Failed to load user:', err);
-            } finally {
                 setIsLoading(false);
             }
         }
-
+    
         loadUser();
     }, []);
 
