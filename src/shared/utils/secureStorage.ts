@@ -1,59 +1,78 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
-// Keys
+// Para web, usaremos localStorage como alternativa
+const webStorage = {
+    getItemAsync: async (key: string): Promise<string | null> => {
+        return localStorage.getItem(key);
+    },
+    setItemAsync: async (key: string, value: string): Promise<void> => {
+        localStorage.setItem(key, value);
+        return;
+    },
+    deleteItemAsync: async (key: string): Promise<void> => {
+        localStorage.removeItem(key);
+        return;
+    },
+};
+
+// Elegir la implementación adecuada según la plataforma
+const storage = Platform.OS === 'web' ? webStorage : SecureStore;
+
+// Claves
 export const KEYS = {
     AUTH_TOKEN: 'auth_token',
     AUTH_USER: 'auth_user',
 };
 
-// Save item to secure storage
+// Guardar elemento en almacenamiento seguro
 export async function saveItem(key: string, value: string): Promise<void> {
     try {
-        await SecureStore.setItemAsync(key, value);
+        await storage.setItemAsync(key, value);
     } catch (error) {
-        console.error(`Error saving ${key} to secure storage:`, error);
+        console.error(`Error guardando ${key} en almacenamiento seguro:`, error);
         throw error;
     }
 }
 
-// Get item from secure storage
+// Obtener elemento del almacenamiento seguro
 export async function getItem(key: string): Promise<string | null> {
     try {
-        return await SecureStore.getItemAsync(key);
+        return await storage.getItemAsync(key);
     } catch (error) {
-        console.error(`Error getting ${key} from secure storage:`, error);
+        console.error(`Error obteniendo ${key} del almacenamiento seguro:`, error);
         return null;
     }
 }
 
-// Delete item from secure storage
+// Eliminar elemento del almacenamiento seguro
 export async function deleteItem(key: string): Promise<void> {
     try {
-        await SecureStore.deleteItemAsync(key);
+        await storage.deleteItemAsync(key);
     } catch (error) {
-        console.error(`Error deleting ${key} from secure storage:`, error);
+        console.error(`Error eliminando ${key} del almacenamiento seguro:`, error);
         throw error;
     }
 }
 
-// Save object to secure storage
+// Guardar objeto en almacenamiento seguro
 export async function saveObject<T>(key: string, value: T): Promise<void> {
     try {
         const jsonValue = JSON.stringify(value);
         await saveItem(key, jsonValue);
     } catch (error) {
-        console.error(`Error saving object ${key} to secure storage:`, error);
+        console.error(`Error guardando objeto ${key} en almacenamiento seguro:`, error);
         throw error;
     }
 }
 
-// Get object from secure storage
+// Obtener objeto del almacenamiento seguro
 export async function getObject<T>(key: string): Promise<T | null> {
     try {
         const jsonValue = await getItem(key);
         return jsonValue ? JSON.parse(jsonValue) : null;
     } catch (error) {
-        console.error(`Error getting object ${key} from secure storage:`, error);
+        console.error(`Error obteniendo objeto ${key} del almacenamiento seguro:`, error);
         return null;
     }
 }
