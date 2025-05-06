@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedText } from '../../../shared/components/ThemedText';
 import { Order } from '../types/orders.types';
@@ -24,7 +24,7 @@ export function OrderCard({ order }: OrderCardProps) {
             activeOpacity={0.7}
         >
             <View style={styles.header}>
-                <ThemedText style={styles.orderNumber} type="subtitle">
+                <ThemedText style={styles.orderNumber}>
                     Pedido #{order.orderNumber}
                 </ThemedText>
                 <OrderStatusBadge status={order.status} />
@@ -32,24 +32,28 @@ export function OrderCard({ order }: OrderCardProps) {
 
             <View style={styles.content}>
                 <View style={styles.infoRow}>
-                    <ThemedText style={styles.label} type="caption">Fecha:</ThemedText>
-                    <ThemedText style={styles.value} type="default">{formatDate(order.date)}</ThemedText>
+                    <View style={styles.infoItem}>
+                        <Feather name="calendar" size={16} color={colors.textSecondary} style={styles.infoIcon} />
+                        <ThemedText style={styles.infoLabel}>Fecha:</ThemedText>
+                        <ThemedText style={styles.infoValue}>{formatDate(order.date)}</ThemedText>
+                    </View>
+
+                    <View style={styles.infoItem}>
+                        <Feather name="package" size={16} color={colors.textSecondary} style={styles.infoIcon} />
+                        <ThemedText style={styles.infoLabel}>Productos:</ThemedText>
+                        <ThemedText style={styles.infoValue}>{order.items.length}</ThemedText>
+                    </View>
                 </View>
 
-                <View style={styles.infoRow}>
-                    <ThemedText style={styles.label} type="caption">Productos:</ThemedText>
-                    <ThemedText style={styles.value} type="default">{order.items.length}</ThemedText>
-                </View>
-
-                <View style={styles.infoRow}>
-                    <ThemedText style={styles.label} type="caption">Total:</ThemedText>
-                    <ThemedText style={styles.total} type="defaultSemiBold">{formatCurrency(order.total)}</ThemedText>
+                <View style={styles.totalRow}>
+                    <ThemedText style={styles.totalLabel}>Total:</ThemedText>
+                    <ThemedText style={styles.totalValue}>{formatCurrency(order.total)}</ThemedText>
                 </View>
             </View>
 
             <View style={styles.footer}>
-                <ThemedText style={styles.viewDetails} type="link">Ver detalles</ThemedText>
-                <Feather name="chevron-right" size={20} color={colors.primary} />
+                <ThemedText style={styles.viewDetails}>Ver detalles</ThemedText>
+                <Feather name="chevron-right" size={18} color={colors.primary} />
             </View>
         </TouchableOpacity>
     );
@@ -57,56 +61,89 @@ export function OrderCard({ order }: OrderCardProps) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
+        backgroundColor: colors.surface,
+        borderRadius: 16,
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
         shadowRadius: 8,
-        elevation: 2,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
+        elevation: 3,
+        marginHorizontal: 2,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: 12,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0,0,0,0.05)',
+        borderBottomColor: colors.divider,
+        backgroundColor: colors.backgroundAlt,
     },
     orderNumber: {
-        fontSize: typography.sizes.h3,
+        fontSize: typography.sizes.h4,
+        fontFamily: typography.fontFamily.sansBold,
+        color: colors.primary,
     },
     content: {
-        paddingVertical: 12,
+        padding: 20,
     },
     infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    infoItem: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
     },
-    label: {
-        color: colors.secondary,
+    infoIcon: {
+        marginRight: 8,
     },
-    value: {
+    infoLabel: {
+        fontSize: typography.sizes.caption,
+        color: colors.textSecondary,
+        fontFamily: typography.fontFamily.sans,
+        marginRight: 4,
+    },
+    infoValue: {
+        fontSize: typography.sizes.caption,
+        color: colors.text,
+        fontFamily: typography.fontFamily.sans,
+    },
+    totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: colors.divider,
+    },
+    totalLabel: {
         fontSize: typography.sizes.body,
+        fontFamily: typography.fontFamily.sansBold,
+        color: colors.textSecondary,
     },
-    total: {
+    totalValue: {
+        fontSize: typography.sizes.h4,
+        fontFamily: typography.fontFamily.sansBold,
         color: colors.primary,
     },
     footer: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        paddingTop: 12,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(0,0,0,0.05)',
+        borderTopColor: colors.divider,
+        backgroundColor: Platform.OS === 'ios' ? colors.surface : colors.backgroundAlt,
     },
     viewDetails: {
+        fontSize: typography.sizes.caption,
         color: colors.primary,
-        marginRight: 4,
+        fontFamily: typography.fontFamily.sans,
+        marginRight: 8,
     },
 });

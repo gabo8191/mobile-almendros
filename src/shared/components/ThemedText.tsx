@@ -5,7 +5,7 @@ import { typography } from '@/src/constants/Typography';
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'subtitle' | 'defaultSemiBold' | 'link' | 'caption' | 'button' | 'heading';
+  type?: 'default' | 'title' | 'subtitle' | 'heading' | 'subheading' | 'defaultSemiBold' | 'link' | 'caption' | 'button' | 'small';
 };
 
 export function ThemedText({
@@ -21,14 +21,7 @@ export function ThemedText({
     <Text
       style={[
         { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'link' ? styles.link : undefined,
-        type === 'caption' ? styles.caption : undefined,
-        type === 'button' ? styles.button : undefined,
-        type === 'heading' ? styles.heading : undefined,
+        styles[type] || styles.default,
         style,
       ]}
       {...rest}
@@ -38,59 +31,72 @@ export function ThemedText({
 
 const styles = StyleSheet.create<Record<string, TextStyle>>({
   default: {
-    fontFamily: typography.bodyFont.fontFamily,
-    fontWeight: typography.bodyFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.sans,
     fontSize: typography.sizes.body,
     lineHeight: typography.sizes.body * typography.lineHeights.body,
   },
+
   defaultSemiBold: {
-    fontFamily: typography.subtitleFont.fontFamily,
-    fontWeight: typography.subtitleFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.sansBold,
     fontSize: typography.sizes.body,
     lineHeight: typography.sizes.body * typography.lineHeights.body,
   },
+
   title: {
-    fontFamily: typography.titleFont.fontFamily,
-    fontWeight: typography.titleFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.serif,
     fontSize: typography.sizes.h1,
     lineHeight: typography.sizes.h1 * typography.lineHeights.h1,
-    letterSpacing: -0.5, // Ajuste fino para similar a la web
+    letterSpacing: -0.5,
+    color: '#000',
   },
+
   subtitle: {
-    fontFamily: typography.subtitleFont.fontFamily,
-    fontWeight: typography.subtitleFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.sans,
     fontSize: typography.sizes.h3,
-    lineHeight: typography.sizes.h3 * typography.lineHeights.h2,
-    color: '#30642B',
+    lineHeight: typography.sizes.h3 * typography.lineHeights.h3,
+    color: '#2E7D32',
   },
+
   heading: {
-    fontFamily: typography.subtitleFont.fontFamily,
-    fontWeight: typography.subtitleFont.fontWeight as TextStyle['fontWeight'],
-    fontSize: typography.sizes.h4,
-    lineHeight: typography.sizes.h4 * typography.lineHeights.h2,
-    color: '#30642B',
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h2,
+    lineHeight: typography.sizes.h2 * typography.lineHeights.h2,
+    letterSpacing: -0.3,
   },
+
+  subheading: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h4,
+    lineHeight: typography.sizes.h4 * typography.lineHeights.h3,
+    color: '#2E7D32',
+  },
+
   link: {
-    fontFamily: typography.bodyFont.fontFamily,
-    fontWeight: typography.bodyFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.sans,
     fontSize: typography.sizes.body,
     lineHeight: typography.sizes.body * typography.lineHeights.body,
-    color: '#30642B',
+    color: '#2E7D32',
     textDecorationLine: 'none',
   },
+
   caption: {
-    fontFamily: typography.captionFont.fontFamily,
-    fontWeight: typography.captionFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.sansLight,
     fontSize: typography.sizes.caption,
-    lineHeight: typography.sizes.caption * typography.lineHeights.body,
-    color: '#30642B',
+    lineHeight: typography.sizes.caption * typography.lineHeights.caption,
+    color: '#546E7A',
   },
+
   button: {
-    fontFamily: typography.buttonFont.fontFamily,
-    fontWeight: typography.buttonFont.fontWeight as TextStyle['fontWeight'],
+    fontFamily: typography.fontFamily.sansBold,
     fontSize: typography.sizes.button,
-    lineHeight: typography.sizes.button * typography.lineHeights.body,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    lineHeight: typography.sizes.button * typography.lineHeights.button,
+    letterSpacing: 0.3,
+  },
+
+  small: {
+    fontFamily: typography.fontFamily.sansLight,
+    fontSize: typography.sizes.small,
+    lineHeight: typography.sizes.small * typography.lineHeights.caption,
+    color: '#78909C',
   },
 });

@@ -1,18 +1,24 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { colors } from '../../../constants/Colors';
+import { typography } from '../../../constants/Typography';
 
 type EmptyStateProps = {
     icon: React.ReactNode;
     title: string;
     description: string;
+    imageUrl?: any; // Optional image to show instead of icon
 };
 
-export function EmptyState({ icon, title, description }: EmptyStateProps) {
+export function EmptyState({ icon, title, description, imageUrl }: EmptyStateProps) {
     return (
         <View style={styles.container}>
-            <View style={styles.iconContainer}>{icon}</View>
+            {imageUrl ? (
+                <Image source={imageUrl} style={styles.image} resizeMode="contain" />
+            ) : (
+                <View style={styles.iconContainer}>{icon}</View>
+            )}
             <ThemedText style={styles.title}>{title}</ThemedText>
             <ThemedText style={styles.description}>{description}</ThemedText>
         </View>
@@ -21,23 +27,36 @@ export function EmptyState({ icon, title, description }: EmptyStateProps) {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 24,
+        padding: 32,
         alignItems: 'center',
         justifyContent: 'center',
     },
     iconContainer: {
-        marginBottom: 16,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: `${colors.primary}10`,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    image: {
+        width: 200,
+        height: 160,
+        marginBottom: 24,
     },
     title: {
-        fontFamily: 'SF-Pro-Display-Bold',
-        fontSize: 20,
-        marginBottom: 8,
+        fontFamily: typography.fontFamily.sansBold,
+        fontSize: typography.sizes.h3,
+        color: colors.text,
+        marginBottom: 12,
         textAlign: 'center',
     },
     description: {
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 16,
-        color: colors.secondary,
+        fontFamily: typography.fontFamily.sans,
+        fontSize: typography.sizes.body,
+        color: colors.textSecondary,
         textAlign: 'center',
+        lineHeight: 24,
     },
 });

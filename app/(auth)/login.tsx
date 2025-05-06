@@ -9,7 +9,8 @@ import {
     Keyboard,
     TouchableOpacity,
     TextInput,
-    TextStyle
+    KeyboardAvoidingView,
+    StatusBar,
 } from 'react-native';
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { AppLoader } from '../../src/shared/components/AppLoader';
@@ -61,177 +62,220 @@ export default function LoginScreen() {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <SafeAreaView style={styles.container}>
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require('../../assets/images/logo.png')}
-                        style={styles.logoImage}
-                        resizeMode="contain"
-                    />
-                    <ThemedText style={styles.logoText} type="title">
-                        Almendros
-                    </ThemedText>
-                </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <SafeAreaView style={styles.container}>
+                    <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
-                <View style={styles.headerContainer}>
-                    <ThemedText style={styles.subtitleText} type="heading">
-                        Inicie sesión para ver sus pedidos
-                    </ThemedText>
-                </View>
-
-                <View style={styles.formContainer}>
-                    {/* Input de Cédula */}
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={cedula}
-                            onChangeText={setCedula}
-                            placeholder="Ingrese su cédula"
-                            keyboardType="numeric"
-                            maxLength={10}
-                            placeholderTextColor="#999"
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../../assets/images/logo.png')}
+                            style={styles.logoImage}
+                            resizeMode="contain"
                         />
-                        {cedulaError ? (
-                            <ThemedText style={styles.errorText}>{cedulaError}</ThemedText>
-                        ) : null}
+                        <ThemedText style={styles.logoText} type="title">
+                            Almendros
+                        </ThemedText>
                     </View>
 
-                    {/* Input de Contraseña */}
-                    <View style={styles.inputContainer}>
-                        <View style={styles.passwordContainer}>
-                            <TextInput
-                                style={styles.input}
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder="Ingrese su contraseña"
-                                secureTextEntry={!passwordVisible}
-                                placeholderTextColor="#999"
-                            />
-                            <TouchableOpacity
-                                style={styles.eyeIcon}
-                                onPress={() => setPasswordVisible(!passwordVisible)}
-                            >
-                                <Feather
-                                    name={passwordVisible ? "eye-off" : "eye"}
-                                    size={20}
-                                    color="#666"
+                    <View style={styles.headerContainer}>
+                        <ThemedText style={styles.welcomeText} type="subtitle">
+                            Bienvenido
+                        </ThemedText>
+                        <ThemedText style={styles.subtitleText} type="heading">
+                            Inicie sesión para ver sus pedidos
+                        </ThemedText>
+                    </View>
+
+                    <View style={styles.formContainer}>
+                        {/* Input de Cédula */}
+                        <View style={styles.inputContainer}>
+                            <View style={styles.inputWrapper}>
+                                <Feather name="user" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={cedula}
+                                    onChangeText={setCedula}
+                                    placeholder="Ingrese su cédula"
+                                    keyboardType="numeric"
+                                    maxLength={10}
+                                    placeholderTextColor={colors.textTertiary}
                                 />
-                            </TouchableOpacity>
+                            </View>
+                            {cedulaError ? (
+                                <ThemedText style={styles.errorText}>{cedulaError}</ThemedText>
+                            ) : null}
                         </View>
-                        {passwordError ? (
-                            <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
-                        ) : null}
+
+                        {/* Input de Contraseña */}
+                        <View style={styles.inputContainer}>
+                            <View style={styles.inputWrapper}>
+                                <Feather name="lock" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    placeholder="Ingrese su contraseña"
+                                    secureTextEntry={!passwordVisible}
+                                    placeholderTextColor={colors.textTertiary}
+                                />
+                                <TouchableOpacity
+                                    style={styles.eyeIcon}
+                                    onPress={() => setPasswordVisible(!passwordVisible)}
+                                >
+                                    <Feather
+                                        name={passwordVisible ? "eye-off" : "eye"}
+                                        size={20}
+                                        color={colors.textSecondary}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {passwordError ? (
+                                <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
+                            ) : null}
+                        </View>
+
+                        {error && (
+                            <View style={styles.errorContainer}>
+                                <ThemedText style={styles.errorText}>{error}</ThemedText>
+                            </View>
+                        )}
+
+                        <TouchableOpacity
+                            style={styles.loginButton}
+                            onPress={handleLogin}
+                            disabled={isLoading}
+                            activeOpacity={0.8}
+                        >
+                            <ThemedText style={styles.buttonText} type="button">
+                                Iniciar Sesión
+                            </ThemedText>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.forgotPassword}>
+                            <ThemedText style={styles.forgotPasswordText} type="caption">
+                                ¿Olvidó su contraseña?
+                            </ThemedText>
+                        </TouchableOpacity>
                     </View>
 
-                    {error && (
-                        <View style={styles.errorContainer}>
-                            <ThemedText style={styles.errorText}>{error}</ThemedText>
-                        </View>
-                    )}
-
-                    <TouchableOpacity
-                        style={styles.loginButton}
-                        onPress={handleLogin}
-                        disabled={isLoading}
-                    >
-                        <ThemedText style={styles.buttonText} type="button">
-                            Iniciar Sesión
-                        </ThemedText>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.forgotPassword}>
-                        <ThemedText style={styles.forgotPasswordText} type="caption">
-                            ¿Olvidó su contraseña?
-                        </ThemedText>
-                    </TouchableOpacity>
-                </View>
-
-                {isLoading && <AppLoader />}
-            </SafeAreaView>
-        </TouchableWithoutFeedback>
+                    {isLoading && <AppLoader />}
+                </SafeAreaView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.surface,
     },
     logoContainer: {
         alignItems: 'center',
         marginTop: Platform.OS === 'ios' ? 60 : 40,
-        marginBottom: 30,
+        marginBottom: 20,
     },
     logoImage: {
-        width: 60,
-        height: 60,
+        width: 80,
+        height: 80,
+        borderRadius: 20,
+        backgroundColor: colors.backgroundAlt,
+        padding: 15,
     },
     logoText: {
-        marginTop: 10,
-        fontSize: 32,
-        textAlign: 'center',
+        marginTop: 12,
+        fontSize: typography.sizes.h1,
+        color: colors.primaryDark,
+        fontFamily: typography.fontFamily.serif,
     },
     headerContainer: {
-        paddingHorizontal: 24,
-        marginBottom: 40,
+        paddingHorizontal: 32,
+        marginBottom: 30,
+        alignItems: 'center',
+    },
+    welcomeText: {
+        fontSize: typography.sizes.h3,
+        color: colors.primary,
+        marginBottom: 8,
+        fontFamily: typography.fontFamily.sans,
     },
     subtitleText: {
+        fontSize: typography.sizes.body,
+        color: colors.textSecondary,
         textAlign: 'center',
+        fontFamily: typography.fontFamily.sansLight,
     },
     formContainer: {
-        paddingHorizontal: 24,
+        paddingHorizontal: 32,
     },
     inputContainer: {
         marginBottom: 20,
     },
-    input: {
-        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-        fontWeight: 'normal' as TextStyle['fontWeight'],
-        fontSize: typography.sizes.body,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        paddingHorizontal: 16,
-        color: '#333',
-    },
-    passwordContainer: {
+    inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        position: 'relative',
+        backgroundColor: colors.background,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.border,
+        paddingHorizontal: 16,
+        height: 56,
+    },
+    inputIcon: {
+        marginRight: 12,
+    },
+    input: {
+        flex: 1,
+        color: colors.text,
+        fontSize: typography.sizes.body,
+        fontFamily: typography.fontFamily.sans,
+        height: '100%',
     },
     eyeIcon: {
-        position: 'absolute',
-        right: 16,
+        padding: 8,
     },
     errorContainer: {
-        padding: 12,
-        backgroundColor: 'rgba(255, 59, 48, 0.1)',
-        borderRadius: 8,
+        padding: 16,
+        backgroundColor: 'rgba(211, 47, 47, 0.08)',
+        borderRadius: 12,
         marginBottom: 20,
+        borderLeftWidth: 4,
+        borderLeftColor: colors.error,
     },
     errorText: {
         color: colors.error,
         marginTop: 6,
-        fontSize: 14,
+        fontSize: typography.sizes.small,
+        fontFamily: typography.fontFamily.sans,
     },
     loginButton: {
-        backgroundColor: '#228B22',
-        borderRadius: 8,
+        backgroundColor: colors.primary,
+        borderRadius: 12,
         padding: 16,
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 16,
+        elevation: 2,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
     },
     buttonText: {
-        color: '#fff',
-        fontSize: 16,
+        color: colors.textLight,
+        fontSize: typography.sizes.button,
+        fontFamily: typography.fontFamily.sansBold,
     },
     forgotPassword: {
         marginTop: 24,
         alignItems: 'center',
     },
     forgotPasswordText: {
-        fontSize: 14,
+        fontSize: typography.sizes.caption,
+        color: colors.primary,
+        fontFamily: typography.fontFamily.sans,
     },
 });
