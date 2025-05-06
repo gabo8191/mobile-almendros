@@ -7,11 +7,11 @@ import { Feather } from '@expo/vector-icons';
 import { colors } from '../../../constants/Colors';
 import { formatDate, formatCurrency } from '../../../shared/utils/formatters';
 import { OrderStatusBadge } from './OrderStatusBadge';
+import { typography } from '../../../constants/Typography';
 
 type OrderCardProps = {
     order: Order;
 };
-
 export function OrderCard({ order }: OrderCardProps) {
     const handlePress = () => {
         router.push(`/order/${order.id}`);
@@ -24,7 +24,7 @@ export function OrderCard({ order }: OrderCardProps) {
             activeOpacity={0.7}
         >
             <View style={styles.header}>
-                <ThemedText style={styles.orderNumber}>
+                <ThemedText style={styles.orderNumber} type="subtitle">
                     Pedido #{order.orderNumber}
                 </ThemedText>
                 <OrderStatusBadge status={order.status} />
@@ -32,23 +32,23 @@ export function OrderCard({ order }: OrderCardProps) {
 
             <View style={styles.content}>
                 <View style={styles.infoRow}>
-                    <ThemedText style={styles.label}>Fecha:</ThemedText>
-                    <ThemedText style={styles.value}>{formatDate(order.date)}</ThemedText>
+                    <ThemedText style={styles.label} type="caption">Fecha:</ThemedText>
+                    <ThemedText style={styles.value} type="default">{formatDate(order.date)}</ThemedText>
                 </View>
 
                 <View style={styles.infoRow}>
-                    <ThemedText style={styles.label}>Productos:</ThemedText>
-                    <ThemedText style={styles.value}>{order.items.length}</ThemedText>
+                    <ThemedText style={styles.label} type="caption">Productos:</ThemedText>
+                    <ThemedText style={styles.value} type="default">{order.items.length}</ThemedText>
                 </View>
 
                 <View style={styles.infoRow}>
-                    <ThemedText style={styles.label}>Total:</ThemedText>
-                    <ThemedText style={styles.total}>{formatCurrency(order.total)}</ThemedText>
+                    <ThemedText style={styles.label} type="caption">Total:</ThemedText>
+                    <ThemedText style={styles.total} type="defaultSemiBold">{formatCurrency(order.total)}</ThemedText>
                 </View>
             </View>
 
             <View style={styles.footer}>
-                <ThemedText style={styles.viewDetails}>Ver detalles</ThemedText>
+                <ThemedText style={styles.viewDetails} type="link">Ver detalles</ThemedText>
                 <Feather name="chevron-right" size={20} color={colors.primary} />
             </View>
         </TouchableOpacity>
@@ -77,8 +77,7 @@ const styles = StyleSheet.create({
         borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     orderNumber: {
-        fontFamily: 'SF-Pro-Display-Bold',
-        fontSize: 18,
+        fontSize: typography.sizes.h3,
     },
     content: {
         paddingVertical: 12,
@@ -90,17 +89,12 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     label: {
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 15,
         color: colors.secondary,
     },
     value: {
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 15,
+        fontSize: typography.sizes.body,
     },
     total: {
-        fontFamily: 'SF-Pro-Display-Bold',
-        fontSize: 16,
         color: colors.primary,
     },
     footer: {
@@ -112,8 +106,6 @@ const styles = StyleSheet.create({
         borderTopColor: 'rgba(0,0,0,0.05)',
     },
     viewDetails: {
-        fontFamily: 'SF-Pro-Text-Medium',
-        fontSize: 14,
         color: colors.primary,
         marginRight: 4,
     },

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter, useSegments } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { User, AuthResponse } from '../../features/auth/types/auth.types';
+import { User } from '../../features/auth/types/auth.types';
 import { login as loginApi, logout as logoutApi, getCurrentUser, storeUser } from '../../features/auth/api/authService';
 
 type AuthContextType = {
@@ -28,20 +28,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
     const segments = useSegments();
 
     // Check if user is authenticated and redirect accordingly
     useEffect(() => {
         if (!isLoading) {
-            const inAuthGroup = segments.length > 0 && segments[0] === "(auth)";
+            const inAuthGroup = segments[0]?.startsWith('(auth)') ?? false;
 
             if (!user && !inAuthGroup) {
                 // Redirect to login if not authenticated
-                router.replace("/(auth)/login" as any); // Usar type assertion para evitar errores
+                router.replace('/(auth)/login' as any);
             } else if (user && inAuthGroup) {
                 // Redirect to main app if already authenticated
-                router.replace("/(tabs)" as any);
+                router.replace('/(tabs)' as any);
             }
         }
     }, [user, isLoading, segments]);
@@ -76,7 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await storeUser(response.user);
 
             // Redirect to orders tab
-            router.replace("/(tabs)" as any);
+            router.replace('/(tabs)' as any);
         } catch (err: any) {
             setError('Credenciales inválidas. Por favor intente nuevamente.');
             console.error('Login failed:', err);
@@ -91,7 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
             await logoutApi();
             setUser(null);
-            router.replace("/(auth)/login" as any);
+            router.replace('/(auth)/login' as any);
         } catch (err: any) {
             console.error('Logout failed:', err);
         } finally {

@@ -7,11 +7,11 @@ import { OrderCard } from '../../src/features/orders/components/OrderCard';
 import { EmptyState } from '../../src/shared/components/ui/EmptyState';
 import { useOrders } from '../../src/features/orders/context/OrdersContext';
 import { Feather } from '@expo/vector-icons';
+import { Order } from '../../src/features/orders/types/orders.types';
 
 export default function OrdersScreen() {
   const { orders, isLoading, isRefreshing, refreshOrders, error } = useOrders();
-
-  const renderItem = useCallback(({ item }) => {
+  const renderItem = useCallback(({ item }: { item: Order }) => {
     return <OrderCard order={item} />;
   }, []);
 

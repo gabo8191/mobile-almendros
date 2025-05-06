@@ -7,20 +7,23 @@ import {
     Platform,
     TouchableWithoutFeedback,
     Keyboard,
-    TouchableOpacity
+    TouchableOpacity,
+    TextInput,
+    TextStyle
 } from 'react-native';
 import { ThemedText } from '../../src/shared/components/ThemedText';
-import { AppInput } from '../../src/shared/components/AppInput';
-import { AppButton } from '../../src/shared/components/AppButton';
 import { AppLoader } from '../../src/shared/components/AppLoader';
 import { colors } from '../../src/constants/Colors';
 import { useAuth } from '../../src/shared/context/AuthContext';
+import { Feather } from '@expo/vector-icons';
+import { typography } from '../../src/constants/Typography';
 
 export default function LoginScreen() {
     const [cedula, setCedula] = useState('');
     const [password, setPassword] = useState('');
     const [cedulaError, setCedulaError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
     const { login, isLoading, error } = useAuth();
 
@@ -66,34 +69,60 @@ export default function LoginScreen() {
                         style={styles.logoImage}
                         resizeMode="contain"
                     />
+                    <ThemedText style={styles.logoText} type="title">
+                        Almendros
+                    </ThemedText>
                 </View>
 
                 <View style={styles.headerContainer}>
-                    <ThemedText style={styles.welcomeText}>Bienvenido</ThemedText>
-                    <ThemedText style={styles.subtitleText}>
+                    <ThemedText style={styles.subtitleText} type="heading">
                         Inicie sesión para ver sus pedidos
                     </ThemedText>
                 </View>
 
                 <View style={styles.formContainer}>
-                    <AppInput
-                        label="Cédula"
-                        value={cedula}
-                        onChangeText={setCedula}
-                        placeholder="Ingrese su cédula"
-                        keyboardType="numeric"
-                        maxLength={10}
-                        error={cedulaError}
-                    />
+                    {/* Input de Cédula */}
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            value={cedula}
+                            onChangeText={setCedula}
+                            placeholder="Ingrese su cédula"
+                            keyboardType="numeric"
+                            maxLength={10}
+                            placeholderTextColor="#999"
+                        />
+                        {cedulaError ? (
+                            <ThemedText style={styles.errorText}>{cedulaError}</ThemedText>
+                        ) : null}
+                    </View>
 
-                    <AppInput
-                        label="Contraseña"
-                        value={password}
-                        onChangeText={setPassword}
-                        placeholder="Ingrese su contraseña"
-                        secureTextEntry
-                        error={passwordError}
-                    />
+                    {/* Input de Contraseña */}
+                    <View style={styles.inputContainer}>
+                        <View style={styles.passwordContainer}>
+                            <TextInput
+                                style={styles.input}
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder="Ingrese su contraseña"
+                                secureTextEntry={!passwordVisible}
+                                placeholderTextColor="#999"
+                            />
+                            <TouchableOpacity
+                                style={styles.eyeIcon}
+                                onPress={() => setPasswordVisible(!passwordVisible)}
+                            >
+                                <Feather
+                                    name={passwordVisible ? "eye-off" : "eye"}
+                                    size={20}
+                                    color="#666"
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        {passwordError ? (
+                            <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
+                        ) : null}
+                    </View>
 
                     {error && (
                         <View style={styles.errorContainer}>
@@ -101,14 +130,18 @@ export default function LoginScreen() {
                         </View>
                     )}
 
-                    <AppButton
-                        title="Iniciar Sesión"
+                    <TouchableOpacity
+                        style={styles.loginButton}
                         onPress={handleLogin}
                         disabled={isLoading}
-                    />
+                    >
+                        <ThemedText style={styles.buttonText} type="button">
+                            Iniciar Sesión
+                        </ThemedText>
+                    </TouchableOpacity>
 
                     <TouchableOpacity style={styles.forgotPassword}>
-                        <ThemedText style={styles.forgotPasswordText}>
+                        <ThemedText style={styles.forgotPasswordText} type="caption">
                             ¿Olvidó su contraseña?
                         </ThemedText>
                     </TouchableOpacity>
@@ -128,31 +161,49 @@ const styles = StyleSheet.create({
     logoContainer: {
         alignItems: 'center',
         marginTop: Platform.OS === 'ios' ? 60 : 40,
-        marginBottom: 20,
+        marginBottom: 30,
     },
     logoImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 20,
+        width: 60,
+        height: 60,
+    },
+    logoText: {
+        marginTop: 10,
+        fontSize: 32,
+        textAlign: 'center',
     },
     headerContainer: {
         paddingHorizontal: 24,
         marginBottom: 40,
     },
-    welcomeText: {
-        fontFamily: 'SF-Pro-Display-Bold',
-        fontSize: 32,
-        marginBottom: 8,
-        textAlign: 'center',
-    },
     subtitleText: {
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 17,
-        color: colors.secondary,
         textAlign: 'center',
     },
     formContainer: {
         paddingHorizontal: 24,
+    },
+    inputContainer: {
+        marginBottom: 20,
+    },
+    input: {
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontWeight: 'normal' as TextStyle['fontWeight'],
+        fontSize: typography.sizes.body,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        padding: 12,
+        paddingHorizontal: 16,
+        color: '#333',
+    },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    eyeIcon: {
+        position: 'absolute',
+        right: 16,
     },
     errorContainer: {
         padding: 12,
@@ -161,18 +212,26 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     errorText: {
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 14,
         color: colors.error,
-        textAlign: 'center',
+        marginTop: 6,
+        fontSize: 14,
+    },
+    loginButton: {
+        backgroundColor: '#228B22',
+        borderRadius: 8,
+        padding: 16,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
     },
     forgotPassword: {
-        marginTop: 16,
+        marginTop: 24,
         alignItems: 'center',
     },
     forgotPasswordText: {
-        fontFamily: 'SF-Pro-Text-Regular',
-        fontSize: 15,
-        color: colors.primary,
+        fontSize: 14,
     },
 });

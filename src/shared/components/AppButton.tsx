@@ -1,7 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { TouchableOpacity, StyleSheet, ActivityIndicator, TextStyle, ViewStyle } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { colors } from '../../constants/Colors';
+import { typography } from '../../constants/Typography';
 
 type AppButtonProps = {
     title: string;
@@ -32,14 +33,6 @@ export function AppButton({
         style,
     ];
 
-    const textStyles = [
-        styles.text,
-        variant === 'primary' && styles.primaryText,
-        variant === 'secondary' && styles.secondaryText,
-        variant === 'outline' && styles.outlineText,
-        disabled && styles.disabledText,
-    ];
-
     return (
         <TouchableOpacity
             style={buttonStyles}
@@ -50,7 +43,9 @@ export function AppButton({
             {loading ? (
                 <ActivityIndicator color={variant === 'outline' ? colors.primary : '#fff'} />
             ) : (
-                <ThemedText style={textStyles}>{title}</ThemedText>
+                <ThemedText type="button" style={styles.buttonTextBase}>
+                    {title}
+                </ThemedText>
             )}
         </TouchableOpacity>
     );
@@ -58,45 +53,36 @@ export function AppButton({
 
 const styles = StyleSheet.create({
     button: {
-        paddingVertical: 14,
+        paddingVertical: 16,
         paddingHorizontal: 24,
-        borderRadius: 12,
+        borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-    },
+        elevation: 0,
+        shadowOpacity: 0,
+    } as ViewStyle,
     primaryButton: {
-        backgroundColor: colors.primary,
-    },
+        backgroundColor: '#228B22',
+    } as ViewStyle,
     secondaryButton: {
         backgroundColor: 'rgba(34, 139, 34, 0.1)',
-    },
+    } as ViewStyle,
     outlineButton: {
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: colors.primary,
-    },
+    } as ViewStyle,
     disabledButton: {
         backgroundColor: '#E5E5EA',
         borderColor: '#E5E5EA',
-    },
+    } as ViewStyle,
     fullWidth: {
         width: '100%',
-    },
-    text: {
-        fontSize: 16,
-        fontFamily: 'SF-Pro-Text-Medium',
-    },
-    primaryText: {
-        color: '#fff',
-    },
-    secondaryText: {
-        color: colors.primary,
-    },
-    outlineText: {
-        color: colors.primary,
-    },
-    disabledText: {
-        color: '#8E8E93',
-    },
+    } as ViewStyle,
+    // Estilo base para el texto del botón
+    buttonTextBase: {
+        color: '#fff', // Por defecto blanco para botón primario
+        fontSize: typography.sizes.button,
+    } as TextStyle,
 });
