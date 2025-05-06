@@ -1,161 +1,139 @@
-# Mobile Almendros
+# 📱 Mobile Almendros
 
-Mobile application for Almendros project using React Native with Expo.
+Aplicación móvil para el proyecto **Almendros**, desarrollada con **React Native** y **Expo**.
 
-## Project Overview
+## 📋 Descripción del Proyecto
 
-This mobile application allows clients to:
-- Register and login to their accounts
-- View their orders and order details
-- Check their profile information
-- Cancel orders that are in pending or processing status
+Esta aplicación móvil permite a los clientes:
 
-## Technologies Used
+- Registrarse e iniciar sesión en sus cuentas
+- Ver sus pedidos y detalles de pedidos
+- Consultar su información de perfil
 
-- React Native 0.79.2
-- React 19.0.0
-- Expo 53
+## 🛠️ Tecnologías Utilizadas
+
+- React Native `0.79.2`
+- React `19.0.0`
+- Expo `53`
 - TypeScript
-- Expo Router for navigation
-- Axios for API requests
-- Lucide React Native for icons
-- Expo Secure Store for secure storage
+- Expo Router (navegación)
+- Axios (peticiones API)
+- Lucide React Native (iconos)
+- Expo Secure Store (almacenamiento seguro)
 
-## Project Structure
+## ✅ Requisitos Previos
 
-```
-mobile-almendros/
-├── api/             # API configuration and setup
-├── app/             # Screens and navigation (Expo Router)
-│   ├── (auth)/      # Authentication screens
-│   ├── (tabs)/      # Main app tabs and screens
-├── assets/          # Images, fonts, etc.
-├── components/      # Reusable UI components
-├── constants/       # App constants, colors, etc.
-├── features/        # Feature-specific code
-│   ├── auth/        # Authentication feature
-│   ├── orders/      # Orders feature
-├── hooks/           # Custom React hooks
-├── utils/           # Utility functions
-```
-
-## Setup and Installation
-
-### Prerequisites
-
-- Node.js (version 22.15.0 or higher)
-- npm or yarn
+- Node.js `>= 22.15.0`
+- npm o yarn
 - Expo CLI
-- Android Studio or Xcode for emulators
+- Android Studio o Xcode para emuladores
 
-### Installation Steps
+## 🚀 Configuración e Instalación
 
-1. Clone the repository:
-```bash
-git clone https://github.com/gabo8191/frontend-almendros.git
-cd frontend-almendros
-```
+1. Clonar el repositorio:
+   ```bash
+   git clone https://github.com/gabo8191/frontend-almendros.git
+   cd frontend-almendros
+2. Instalar dependencias:
+   ```bash
+   npm install
+   # o
+   yarn install
+3. Iniciar el servidor de desarrollo:
+   ```bash
+   npm start
+   # o
+   yarn start
+4. Ejecutar en un dispositivo o emulador:
+   Para IOS:
+   ```bash
+   npm run ios
+   # o
+   yarn ios
+   ```
+   Para Android:
+   
+   ```bash
+   npm run android
+   # o
+   yarn android
+   ```
+## 🧾 Estructura del Proyecto
+mobile-almendros/
+├── api/             # Configuración y setup de API
+├── app/             # Pantallas y navegación (Expo Router)
+│   ├── (auth)/      # Pantallas de autenticación
+│   ├── (tabs)/      # Pestañas y pantallas principales
+├── assets/          # Imágenes, fuentes, etc.
+├── components/      # Componentes UI reutilizables
+├── constants/       # Constantes de la app, colores, etc.
+├── features/        # Código específico por características
+│   ├── auth/        # Característica de autenticación
+│   ├── orders/      # Característica de pedidos
+├── hooks/           # Custom React hooks
+├── utils/           # Funciones de utilidad
 
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-```
+## ⚙️ Configuración del Entorno
 
-3. Start the development server:
-```bash
-npm start
-# or
-yarn start
-```
+La URL base de la API se configura en `api/config.ts`. Asegúrate de ajustarla según el entorno:
+  ```ts
+  // api/config.ts
+  export const API_BASE_URL = 'http://localhost:3000/';
+  
+  if (Platform.OS === 'android') {
+    baseUrl = 'http://10.0.2.2:3000/';
+  }
+  ```
+## ✨ Características
 
-4. Run on a device or emulator:
-```bash
-# For iOS
-npm run ios
-# or
-yarn ios
+### 🔐 Autenticación
+- Inicio de sesión con email y contraseña
+- Registro de usuario
+- Almacenamiento seguro de tokens
+- Redirección automática según estado de autenticación
+📦 Gestión de Pedidos
+Soon...
+👤 Gestión de Perfil
+Soon...
+- Cierre de sesión
 
-# For Android
-npm run android
-# or
-yarn android
-```
+##🔌 Integración con API
+Todas las peticiones API se manejan con Axios:
+- features/auth/api/authService.ts
+- features/orders/api/ordersService.ts
 
-## Environment Configuration
+## 🔄 Flujos de Trabajo CI/CD
+Este repositorio incluye flujos de trabajo de GitHub Actions:
+- Auto Changelog: Genera automáticamente un registro de cambios basado en los commits (main)
+- Auto Tag: Añade etiquetas según la versión del package.json (main)
+- Mobile CI:
+  - Construye la app para Android
+  - Ejecuta lint
+  - Activo en ramas main, release y develop
 
-The application is configured to connect to the backend API. The API base URL is set in `api/config.ts`. Update this to match your backend server:
+## 🧪 Pruebas
 
-```typescript
-// api/config.ts
-export const API_URL = 'https://api.backend-almendros.com';
-export const API_TIMEOUT = 15000; // 15 seconds
-```
+Para ejecutar la app en modo desarrollo:
+  ```bash
+  npm start
+  ```
+Esto abrirá Expo DevTools y podrás:
+- Ejecutar en simulador iOS (requiere macOS)
+- Ejecutar en emulador Android
+- Usar la app Expo Go en dispositivo físico (Estar en la misma red y poner la IP del Host en config.ts)
 
-## Features
+## 📦 Compilación para Producción
 
-### Authentication
-
-- Login with cedula and password
-- User registration
-- Secure token storage
-- Automatic redirection based on authentication status
-
-### Orders Management
-
-- View list of all orders
-- View order details
-- Order status tracking
-- Cancel orders in pending or processing status
-
-### Profile Management
-
-- View user profile information
-- Log out functionality
-
-## API Integration
-
-The application is designed to work with the backend API. All API requests are handled through Axios and are configured in the respective service files:
-
-- `features/auth/api/authService.ts`
-- `features/orders/api/ordersService.ts`
-
-## Testing
-
-To run the application in development mode:
-
-```bash
-npm start
-```
-
-This will start the Expo development server. You can then run the app on:
-
-- iOS Simulator (requires macOS and Xcode)
-- Android Emulator (requires Android Studio)
-- Physical device using the Expo Go app
-
-## Building for Production
-
-To build the app for production:
-
-1. For Android:
-```bash
-expo build:android
-```
-
-2. For iOS:
-```bash
-expo build:ios
-```
-
-## Contributing
-
-1. Create a feature branch from the `develop` branch
-2. Make your changes
-3. Submit a pull request to the `develop` branch
-
-## Related Projects
-
-- Backend: [https://github.com/gabo8191/backend-almendros](https://github.com/gabo8191/backend-almendros)
-- Frontend: [https://github.com/gabo8191/frontend-almendros](https://github.com/gabo8191/frontend-almendros)
+### Android:
+  ```bash
+  npx expo prebuild --clean --platform android
+  cd android
+  ./gradlew assembleDebug
+  ```
+### iOS:
+  ```bash
+  npx expo prebuild --clean --platform ios
+  cd ios
+  pod install
+  xcodebuild -workspace YourApp.xcworkspace -scheme YourApp -configuration Release
+  ```
