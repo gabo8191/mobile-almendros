@@ -8,7 +8,8 @@ export const ENDPOINTS = {
         GET_CLIENT: (id: string) => `/clients/${id}`,
     },
     ORDERS: {
-        GET_ALL: '/orders',
-        GET_BY_ID: (id: string) => `/orders/${id}`,
+        // Cambia esto para usar los endpoints de clientes temporalmente
+        GET_ALL: '/clients', // En lugar de '/orders'
+        GET_BY_ID: (id: string) => `/clients/${id}`, // En lugar de '/orders/:id'
     }
 };
