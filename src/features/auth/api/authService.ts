@@ -25,6 +25,28 @@ export const login = async (email: string, password: string): Promise<AuthRespon
     }
 };
 
+export const loginWithDocument = async (documentType: string, documentNumber: string): Promise<AuthResponse> => {
+    try {
+        const credentials = {
+            documentType,
+            documentNumber
+        };
+
+        const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN_CLIENT, credentials);
+
+        // Store the token for future requests
+        if (response.data.token) {
+            await saveItem(KEYS.AUTH_TOKEN, response.data.token);
+            await saveObject(KEYS.AUTH_USER, response.data.user);
+        }
+
+        return response.data;
+    } catch (error: any) {
+        console.error('Login error:', error);
+        throw new Error(error.response?.data?.message || 'Error durante el inicio de sesión');
+    }
+};
+
 export const logout = async (): Promise<void> => {
     try {
         await deleteItem(KEYS.AUTH_TOKEN);
