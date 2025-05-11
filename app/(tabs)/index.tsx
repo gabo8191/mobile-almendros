@@ -1,75 +1,129 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  View,
+  StyleSheet,
+  RefreshControl,
+  SafeAreaView,
+  Platform,
+  FlatList,
+  StatusBar
+} from 'react-native';
+import { ThemedText } from '../../src/shared/components/ThemedText';
+import { colors } from '../../src/constants/Colors';
+import { AppLoader } from '../../src/shared/components/AppLoader';
+import { OrderCard } from '../../src/features/orders/components/OrderCard';
+import { EmptyState } from '../../src/shared/components/ui/EmptyState';
+import { useOrders } from '../../src/features/orders/context/OrdersContext';
+import { Feather } from '@expo/vector-icons';
+import { Order } from '../../src/features/orders/types/orders.types';
+import { typography } from '../../src/constants/Typography';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function OrdersScreen() {
+  const { orders, isLoading, isRefreshing, refreshOrders, error } = useOrders();
 
-export default function HomeScreen() {
+  const renderItem = useCallback(({ item }: { item: Order }) => {
+    return <OrderCard order={item} />;
+  }, []);
+
+  if (isLoading && !isRefreshing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <AppLoader size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
+
+      <View style={styles.header}>
+        <ThemedText style={styles.title}>Mis Pedidos</ThemedText>
+      </View>
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Feather name="alert-circle" size={20} color={colors.error} style={styles.errorIcon} />
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+        </View>
+      )}
+
+      <FlatList
+        data={orders}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refreshOrders}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon={<Feather name="package" size={56} color={colors.primary} />}
+            title="No hay pedidos"
+            description="No se encontraron pedidos en su cuenta."
+          />
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 12 : 24,
+    paddingBottom: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  title: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h2,
+    color: colors.text,
+    marginLeft: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  separator: {
+    height: 16,
+  },
+  errorContainer: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: 'rgba(211, 47, 47, 0.08)',
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.error,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  errorIcon: {
+    marginRight: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  errorText: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.sizes.body,
+    color: colors.error,
+    flex: 1,
   },
 });
