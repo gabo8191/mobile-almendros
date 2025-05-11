@@ -3,18 +3,23 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --clear",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "eslint .",
+    "cache:clear": "expo start --clear",
+    "prebuild": "npx expo prebuild --clean",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
+    "@shopify/flash-list": "1.7.6",
+    "axios": "^1.9.0",
     "expo": "~53.0.5",
     "expo-blur": "~14.1.4",
     "expo-constants": "~17.1.5",
@@ -23,11 +28,13 @@
     "expo-image": "~2.1.6",
     "expo-linking": "~7.1.4",
     "expo-router": "~5.0.4",
+    "expo-secure-store": "^14.2.3",
     "expo-splash-screen": "~0.30.8",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.4",
     "expo-system-ui": "~5.0.7",
     "expo-web-browser": "~14.1.6",
+    "nanoid": "^3.3.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
@@ -40,10 +47,20 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
     "@types/react": "~19.0.10",
-    "typescript": "~5.8.3",
+    "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "~9.2.0"
+    "eslint-config-expo": "~9.2.0",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
+    "typescript": "~5.8.3"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "nanoid": "3.3.4",
+    "**/nanoid": "3.3.4",
+    "@react-navigation/core/nanoid": "3.3.4",
+    "@react-navigation/native/nanoid": "3.3.4"
+  }
 }
