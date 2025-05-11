@@ -12,8 +12,36 @@ permissions:
   pull-requests: write
 
 jobs:
+  check-commit:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    outputs:
+      should_continue: ${{ steps.check.outputs.should_continue }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check commit message
+        id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          echo "Commit message: $COMMIT_MSG"
+
+          # Si el commit contiene [skip ci] o update changelog, no continuar
+          if [[ "$COMMIT_MSG" == *"[skip ci]"* ]] || [[ "$COMMIT_MSG" == *"update CHANGELOG"* ]]; then
+            echo "Skipping workflow because this is a changelog update commit"
+            echo "should_continue=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+          fi
+
   generate-changelog:
     name: Generate Changelog
+    needs: check-commit
+    # Solo ejecutar si el paso anterior determina que debemos continuar
+    if: needs.check-commit.outputs.should_continue == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -78,7 +106,13 @@ jobs:
           awk -v content="$NEW_CONTENT" 'NR==4{print content}1' CHANGELOG.md > CHANGELOG.tmp
           mv CHANGELOG.tmp CHANGELOG.md
 
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --quiet CHANGELOG.md || echo "changes=true" >> $GITHUB_OUTPUT
+
       - name: Create Pull Request if there are changes
+        if: steps.check_changes.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
