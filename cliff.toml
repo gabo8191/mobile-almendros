@@ -1,0 +1,67 @@
+[changelog]
+# Encabezado del archivo CHANGELOG.md
+header = """
+# 📜 Registro de Cambios - SIGMA
+
+"""
+# Pie de página del archivo CHANGELOG.md
+footer = """
+
+---
+_Sigue el estándar [Keep a Changelog](https://keepachangelog.com/)._
+_🔗 Enlace al repositorio: [github.com/gabo8191/fleet-management-system](https://github.com/gabo8191/fleet-management-system)_
+"""
+# Eliminar espacio en blanco innecesario
+trim = true
+# Ordenar versiones del más reciente al más antiguo
+sort = "desc"
+
+# Configuración de git
+[git]
+# Usar el formato de commits convencionales
+conventional_commits = true
+# Filtrar commits que no son relevantes para el changelog
+filter_commits = true
+# Patrones para ignorar commits
+ignore_commits = ["^Merge ", "^chore\\(deps\\)"]
+# Trabajar con todas las tags
+tag_pattern = "v[0-9]*"
+
+# Analizadores de commits
+[commit_parsers]
+# Categorías principales
+"^feat" = { group = "🚀 Nuevas Funcionalidades" }
+"^fix" = { group = "🐛 Correcciones de Errores" }
+"^perf" = { group = "⚡ Mejoras de Rendimiento" }
+# Categorías secundarias
+"^refactor" = { group = "🔧 Refactorizaciones" }
+"^docs" = { group = "📚 Documentación" }
+"^test" = { group = "🧪 Pruebas" }
+"^style" = { group = "🎨 Estilos de Código" }
+"^ci" = { group = "🔄 Integración Continua" }
+# Separar diferentes tipos de chores
+"^chore\\(deps\\)" = { group = "📦 Actualizaciones de Dependencias" }
+"^chore(?!\\(deps\\))" = { group = "🧹 Mantenimiento" }
+# Categoría para el resto de commits
+"" = { group = "Otros Cambios" }
+
+# Plantillas para generar el changelog
+[template]
+# Plantilla para cada versión
+start = "## Versiones\n\n"
+# Formato para cada versión
+version = """
+### {{ version }} - {{ timestamp | date(format="%Y-%m-%d") }}
+"""
+# Formato para los grupos de commits
+group = """
+#### {{ group }}
+
+{% for commit in commits %}
+- {{ commit.message | upper_first }} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/gabo8191/fleet-management-system/commit/{{ commit.id }}))
+{%- endfor %}
+"""
+# Espacio entre cada grupo
+group_separator = "\n"
+# Sin formato específico para cada commit (ya definido en el grupo)
+commit = ""

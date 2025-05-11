@@ -1,127 +1,81 @@
-name: Auto Generate Changelog
+name: Generate Changelog
 
 on:
   push:
     branches:
       - main
 
-# Permisos explícitos para repositorio privado
 permissions:
   contents: write
-  issues: write
   pull-requests: write
 
 jobs:
-  check-commit:
-    name: Check Commit Message
-    runs-on: ubuntu-latest
-    outputs:
-      should_continue: ${{ steps.check.outputs.should_continue }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Check commit message
-        id: check
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-          echo "Commit message: $COMMIT_MSG"
-
-          # Si el commit contiene [skip ci] o update changelog, no continuar
-          if [[ "$COMMIT_MSG" == *"[skip ci]"* ]] || [[ "$COMMIT_MSG" == *"update CHANGELOG"* ]]; then
-            echo "Skipping workflow because this is a changelog update commit"
-            echo "should_continue=false" >> $GITHUB_OUTPUT
-          else
-            echo "should_continue=true" >> $GITHUB_OUTPUT
-          fi
-
   generate-changelog:
-    name: Generate Changelog
-    needs: check-commit
-    # Solo ejecutar si el paso anterior determina que debemos continuar
-    if: needs.check-commit.outputs.should_continue == 'true'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necesario para obtener todo el historial para el changelog
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-          cache: 'npm'
+      - name: Fetch all tags
+        run: git fetch --tags --force
 
-      - name: Install standard-version
-        run: npm install -g standard-version
-
-      - name: Get latest tag
-        id: get-latest-tag
+      - name: Get Latest Tag
+        id: latest-tag
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
-          echo "Latest tag: $LATEST_TAG"
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "Latest tag found: $LATEST_TAG"
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
-      - name: Generate changelog
+      - name: Set up git-cliff
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          curl -L https://github.com/orhun/git-cliff/releases/download/v1.3.1/git-cliff-1.3.1-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          mv git-cliff-1.3.1/git-cliff /usr/local/bin/
+          chmod +x /usr/local/bin/git-cliff
 
-          # Crear el archivo CHANGELOG.md inicial si no existe
-          if [ ! -f CHANGELOG.md ]; then
-            echo "# Changelog\n\nTodos los cambios notables en este proyecto serán documentados en este archivo.\n" > CHANGELOG.md
-          fi
-
-          # Obtener el último commit
-          LAST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-          LAST_COMMIT_HASH=$(git log -1 --pretty=format:"%h")
-          LAST_COMMIT_DATE=$(git log -1 --pretty=format:"%ad" --date=short)
-
-          # Obtener todos los commits desde el último tag o desde el inicio si no hay tags
-          if [ -n "${{ steps.get-latest-tag.outputs.LATEST_TAG }}" ]; then
-            COMMITS=$(git log ${{ steps.get-latest-tag.outputs.LATEST_TAG }}..HEAD --pretty=format:"* %s (%h)" --reverse)
-          else
-            COMMITS=$(git log --pretty=format:"* %s (%h)" --reverse)
-          fi
-
-          # Si no hay commits, terminar
-          if [ -z "$COMMITS" ]; then
-            echo "No hay nuevos commits para añadir al changelog."
-            exit 0
-          fi
-
-          # Crear una nueva entrada de changelog con fecha actual
-          CURRENT_DATE=$(date +"%Y-%m-%d")
-
-          # Preparar el contenido a insertar al principio del archivo
-          NEW_CONTENT="## [${{ steps.get-latest-tag.outputs.LATEST_TAG || 'Unreleased' }}] - $CURRENT_DATE\n\n"
-          NEW_CONTENT+="### Commits\n\n$COMMITS\n\n"
-
-          # Insertar el nuevo contenido después de la cabecera
-          awk -v content="$NEW_CONTENT" 'NR==4{print content}1' CHANGELOG.md > CHANGELOG.tmp
-          mv CHANGELOG.tmp CHANGELOG.md
+      - name: Generate CHANGELOG.md
+        run: |
+          echo "Generating changelog with git-cliff..."
+          git-cliff --config cliff.toml --output CHANGELOG.md
+          echo "Content of generated CHANGELOG.md:"
+          cat CHANGELOG.md
 
       - name: Check for changes
-        id: check_changes
+        id: check-changes
         run: |
-          git diff --quiet CHANGELOG.md || echo "changes=true" >> $GITHUB_OUTPUT
+          git status CHANGELOG.md
+          if [[ -n "$(git status --porcelain CHANGELOG.md)" ]]; then
+            echo "Cambios detectados en CHANGELOG.md"
+            echo "HAS_CHANGES=true" >> $GITHUB_OUTPUT
+          else
+            echo "No se detectaron cambios en CHANGELOG.md"
+            echo "HAS_CHANGES=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Create Pull Request if there are changes
-        if: steps.check_changes.outputs.changes == 'true'
-        uses: peter-evans/create-pull-request@v6
+      - name: Create Pull Request
+        id: create-pull-request
+        if: steps.check-changes.outputs.HAS_CHANGES == 'true'
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: update CHANGELOG.md [skip ci]'
-          title: 'Actualización automática del CHANGELOG'
+          commit-message: 'docs: Actualizar CHANGELOG.md para versión ${{ github.event.repository.default_branch }}'
+          title: '📚 Actualización de Changelog'
           body: |
-            Este PR actualiza automáticamente el archivo CHANGELOG.md con los últimos cambios.
-
-            Generado automáticamente por la acción de GitHub.
-          branch: update-changelog
-          delete-branch: true
+            Actualización automática del archivo CHANGELOG.md
+            - Generado con git-cliff
+          branch: update-changelog-${{ github.run_id }}
           base: main
+          delete-branch: true
+          labels: documentation,automated
+
+      - name: Comment on PR
+        if: steps.check-changes.outputs.HAS_CHANGES == 'true' && steps.create-pull-request.outputs.pull-request-number != ''
+        run: |
+          PR_NUMBER="${{ steps.create-pull-request.outputs.pull-request-number }}"
+          echo "PR #$PR_NUMBER creado correctamente. Por favor, revisa y haz merge manualmente."
+          gh pr comment "$PR_NUMBER" --body "✅ Changelog actualizado automáticamente. Por favor, revisa los cambios y haz merge cuando estés listo."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
