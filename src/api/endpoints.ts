@@ -11,5 +11,10 @@ export const ENDPOINTS = {
     ORDERS: {
         GET_ALL: '/clients',
         GET_BY_ID: (id: string) => `/clients/${id}`,
+    },
+    PURCHASES: {
+        list: '/customers/purchases',
+        detail: (id: string) => `/customers/purchases/${id}`,
+        share: (id: string) => `/customers/purchases/${id}/share`
     }
 };
