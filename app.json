@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "scheme": "mobilealmendros",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",

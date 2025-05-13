@@ -20,33 +20,23 @@ import { Feather } from '@expo/vector-icons';
 import { typography } from '../../src/constants/Typography';
 
 export default function LoginScreen() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [documentNumber, setDocumentNumber] = useState('');
+    const [documentError, setDocumentError] = useState('');
 
-    const { login, isLoading, error } = useAuth();
+    const { loginWithDocument, isLoading, error } = useAuth();
 
     const validateForm = () => {
         let isValid = true;
 
         // Reset errors
-        setEmailError('');
-        setPasswordError('');
+        setDocumentError('');
 
-        // Validate email
-        if (!email.trim()) {
-            setEmailError('El email es requerido');
+        // Validate document number
+        if (!documentNumber.trim()) {
+            setDocumentError('El número de documento es requerido');
             isValid = false;
-        } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-            setEmailError('Formato de email inválido');
-            isValid = false;
-        }
-
-        // Validate password
-        if (!password.trim()) {
-            setPasswordError('La contraseña es requerida');
+        } else if (!/^\d+$/.test(documentNumber)) {
+            setDocumentError('El número de documento debe contener solo dígitos');
             isValid = false;
         }
 
@@ -57,7 +47,7 @@ export default function LoginScreen() {
         Keyboard.dismiss();
 
         if (validateForm()) {
-            await login(email, password);
+            await loginWithDocument("CC", documentNumber);
         }
     };
 
@@ -86,55 +76,27 @@ export default function LoginScreen() {
                             Bienvenido
                         </ThemedText>
                         <ThemedText style={styles.subtitleText} type="heading">
-                            Inicie sesión para ver sus pedidos
+                            Ingrese su cédula para ver sus pedidos
                         </ThemedText>
                     </View>
 
                     <View style={styles.formContainer}>
-                        {/* Input de Email */}
+                        {/* Input de Cédula */}
                         <View style={styles.inputContainer}>
                             <View style={styles.inputWrapper}>
-                                <Feather name="mail" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                                <Feather name="user" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                                 <TextInput
                                     style={styles.input}
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    placeholder="Ingrese su email"
-                                    keyboardType="email-address"
+                                    value={documentNumber}
+                                    onChangeText={setDocumentNumber}
+                                    placeholder="Ingrese su número de cédula"
+                                    keyboardType="number-pad"
                                     autoCapitalize="none"
                                     placeholderTextColor={colors.textTertiary}
                                 />
                             </View>
-                            {emailError ? (
-                                <ThemedText style={styles.errorText}>{emailError}</ThemedText>
-                            ) : null}
-                        </View>
-
-                        {/* Input de Contraseña */}
-                        <View style={styles.inputContainer}>
-                            <View style={styles.inputWrapper}>
-                                <Feather name="lock" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    placeholder="Ingrese su contraseña"
-                                    secureTextEntry={!passwordVisible}
-                                    placeholderTextColor={colors.textTertiary}
-                                />
-                                <TouchableOpacity
-                                    style={styles.eyeIcon}
-                                    onPress={() => setPasswordVisible(!passwordVisible)}
-                                >
-                                    <Feather
-                                        name={passwordVisible ? "eye-off" : "eye"}
-                                        size={20}
-                                        color={colors.textSecondary}
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                            {passwordError ? (
-                                <ThemedText style={styles.errorText}>{passwordError}</ThemedText>
+                            {documentError ? (
+                                <ThemedText style={styles.errorText}>{documentError}</ThemedText>
                             ) : null}
                         </View>
 
@@ -151,13 +113,7 @@ export default function LoginScreen() {
                             activeOpacity={0.8}
                         >
                             <ThemedText style={styles.buttonText} type="button">
-                                Iniciar Sesión
-                            </ThemedText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.forgotPassword}>
-                            <ThemedText style={styles.forgotPasswordText} type="caption">
-                                ¿Olvidó su contraseña?
+                                Ingresar
                             </ThemedText>
                         </TouchableOpacity>
                     </View>
@@ -235,9 +191,6 @@ const styles = StyleSheet.create({
         fontFamily: typography.fontFamily.sans,
         height: '100%',
     },
-    eyeIcon: {
-        padding: 8,
-    },
     errorContainer: {
         padding: 16,
         backgroundColor: 'rgba(211, 47, 47, 0.08)',
@@ -268,14 +221,5 @@ const styles = StyleSheet.create({
         color: colors.textLight,
         fontSize: typography.sizes.button,
         fontFamily: typography.fontFamily.sansBold,
-    },
-    forgotPassword: {
-        marginTop: 24,
-        alignItems: 'center',
-    },
-    forgotPasswordText: {
-        fontSize: typography.sizes.caption,
-        color: colors.primary,
-        fontFamily: typography.fontFamily.sans,
     },
 });

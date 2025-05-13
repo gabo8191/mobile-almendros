@@ -1,6 +1,7 @@
 export const ENDPOINTS = {
     AUTH: {
         LOGIN: '/auth/login',
+        LOGIN_CLIENT: '/clients/login',
         SIGNUP: '/auth/signup',
         GET_ROLE: '/auth/role',
     },
@@ -8,8 +9,7 @@ export const ENDPOINTS = {
         GET_CLIENT: (id: string) => `/clients/${id}`,
     },
     ORDERS: {
-        // Cambia esto para usar los endpoints de clientes temporalmente
-        GET_ALL: '/clients', // En lugar de '/orders'
-        GET_BY_ID: (id: string) => `/clients/${id}`, // En lugar de '/orders/:id'
+        GET_ALL: '/clients',
+        GET_BY_ID: (id: string) => `/clients/${id}`,
     }
 };
