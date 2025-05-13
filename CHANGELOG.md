@@ -10,6 +10,7 @@
 
 - README.md
 - Actualizar CHANGELOG.md para versión main
+- Actualizar CHANGELOG.md para versión main
 
 ### Feat
 
