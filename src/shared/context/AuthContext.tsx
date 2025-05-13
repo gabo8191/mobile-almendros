@@ -1,13 +1,20 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { router, useSegments } from 'expo-router';
 import { User } from '../../features/auth/types/auth.types';
-import { login as loginApi, logout as logoutApi, getCurrentUser, storeUser } from '../../features/auth/api/authService';
+import {
+    login as loginApi,
+    logout as logoutApi,
+    getCurrentUser,
+    storeUser,
+    loginWithDocument as loginWithDocumentApi
+} from '../../features/auth/api/authService';
 
 type AuthContextType = {
     user: User | null;
     isLoading: boolean;
     error: string | null;
     login: (email: string, password: string) => Promise<void>;
+    loginWithDocument: (documentType: string, documentNumber: string) => Promise<void>;
     logout: () => Promise<void>;
 };
 
@@ -16,6 +23,7 @@ export const AuthContext = createContext<AuthContextType>({
     isLoading: false,
     error: null,
     login: async () => { },
+    loginWithDocument: async () => { },
     logout: async () => { },
 });
 
@@ -56,7 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 setIsLoading(false);
             }
         }
-    
+
         loadUser();
     }, []);
 
@@ -81,6 +89,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     };
 
+    const loginWithDocument = async (documentType: string, documentNumber: string) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await loginWithDocumentApi(documentType, documentNumber);
+
+            // Save user data
+            setUser(response.user);
+            await storeUser(response.user);
+
+            // Redirect to orders tab
+            router.replace('/(tabs)' as any);
+        } catch (err: any) {
+            setError('Documento inválido. Por favor intente nuevamente.');
+            console.error('Login failed:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const logout = async () => {
         setIsLoading(true);
 
@@ -96,7 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, error, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, error, login, loginWithDocument, logout }}>
             {children}
         </AuthContext.Provider>
     );
