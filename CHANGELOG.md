@@ -10,6 +10,7 @@
 
 - README.md
 - Actualizar CHANGELOG.md para versión main
+- Actualizar CHANGELOG.md para versión main
 
 ### Feat
 
@@ -21,6 +22,7 @@
 - Add axios instance with auth interceptors and API configuration
 - Connect order services to backend API and add cancellation & feat(profile): enhance user profile display with backend data
 - Backend integration
+- Sonarqube
 
 ### Fix
 
