@@ -1,6 +1,6 @@
 import api from '../../../api/axios';
 import { ENDPOINTS } from '../../../api/endpoints';
-import { LoginCredentials, User, AuthResponse } from '../types/auth.types';
+import { LoginCredentials, User, AuthResponse, DocumentCredentials } from '../types/auth.types';
 import { saveItem, getItem, deleteItem, getObject, saveObject, KEYS } from '../../../shared/utils/secureStorage';
 
 export const login = async (email: string, password: string): Promise<AuthResponse> => {
@@ -27,7 +27,7 @@ export const login = async (email: string, password: string): Promise<AuthRespon
 
 export const loginWithDocument = async (documentType: string, documentNumber: string): Promise<AuthResponse> => {
     try {
-        const credentials = {
+        const credentials: DocumentCredentials = {
             documentType,
             documentNumber
         };

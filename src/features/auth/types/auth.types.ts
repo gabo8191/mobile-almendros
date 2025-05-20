@@ -6,6 +6,8 @@ export type User = {
     role: string;
     phoneNumber?: string;
     address?: string;
+    documentType?: string;
+    documentNumber?: string;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -14,6 +16,11 @@ export type User = {
 export type LoginCredentials = {
     email: string;
     password: string;
+};
+
+export type DocumentCredentials = {
+    documentType: string;
+    documentNumber: string;
 };
 
 export type AuthResponse = {
