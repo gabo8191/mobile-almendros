@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import config from '../../config';
 
 // Para web, usaremos localStorage como alternativa
 const webStorage = {
@@ -21,8 +22,8 @@ const storage = Platform.OS === 'web' ? webStorage : SecureStore;
 
 // Claves
 export const KEYS = {
-    AUTH_TOKEN: 'auth_token',
-    AUTH_USER: 'auth_user',
+    AUTH_TOKEN: config.auth.storageKeys.token,
+    AUTH_USER: config.auth.storageKeys.user,
 };
 
 // Guardar elemento en almacenamiento seguro

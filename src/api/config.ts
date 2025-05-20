@@ -1,9 +1,4 @@
-import { Platform } from 'react-native';
+import config from '../config';
 
-let baseUrl = 'http://192.168.20.11:3000/';
-
-if (Platform.OS === 'android') {
-    baseUrl = 'http://192.168.20.11:3000/';
-}
-
-export const API_BASE_URL = baseUrl;
+export const API_BASE_URL = config.api.baseUrl;
+export const API_TIMEOUT = config.api.timeout;

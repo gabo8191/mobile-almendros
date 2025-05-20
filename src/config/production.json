@@ -1,0 +1,14 @@
+{
+    "api": {
+        "baseUrl": "https://api.almendros.com/",
+        "timeout": 30000
+    },
+    "auth": {
+        "storageKeys": {
+            "token": "auth_token",
+            "user": "auth_user"
+        }
+    },
+    "version": "1.0.0",
+    "environment": "production"
+}
