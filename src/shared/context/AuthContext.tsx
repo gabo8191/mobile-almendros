@@ -77,9 +77,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await loginApi(email, password);
 
+      // Save user data
       setUser(response.user);
       await storeUser(response.user);
 
+      // Redirect to orders tab
       router.replace('/(tabs)' as any);
     } catch (err: any) {
       setError('Credenciales inválidas. Por favor intente nuevamente.');
@@ -96,6 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await loginWithDocumentApi(documentType, documentNumber);
 
+      // Save user data
       setUser(response.user);
       await storeUser(response.user);
 
@@ -104,6 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err: any) {
       const errorMessage = err.message || 'Error durante el inicio de sesión';
 
+      // Proporcionamos mensajes de error específicos según el tipo de documento
       if (errorMessage.includes('no encontrado') || errorMessage.includes('not found')) {
         setError(`El documento ${documentType} ${documentNumber} no se encuentra registrado.`);
       } else if (errorMessage.includes('inactivo') || errorMessage.includes('inactive')) {
@@ -137,6 +141,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
+// Hook para fácil acceso al contexto
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (!context) {

@@ -33,6 +33,7 @@ export default function LoginScreen() {
     // Reset errors
     setDocumentError('');
 
+    // Validate document number
     if (!documentNumber.trim()) {
       setDocumentError('El número de documento es requerido');
       isValid = false;
@@ -58,58 +59,60 @@ export default function LoginScreen() {
         <SafeAreaView style={styles.container}>
           <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
-          <View style={styles.logoContainer}>
-            <Image source={require('../../assets/images/logo.png')} style={styles.logoImage} resizeMode="contain" />
-            <ThemedText style={styles.logoText} type="title">
-              Almendros
-            </ThemedText>
-          </View>
-
-          <View style={styles.headerContainer}>
-            <ThemedText style={styles.welcomeText} type="subtitle">
-              Bienvenido
-            </ThemedText>
-            <ThemedText style={styles.subtitleText} type="heading">
-              Ingrese su documento para ver sus pedidos
-            </ThemedText>
-          </View>
-
-          <View style={styles.formContainer}>
-            {/* Selector de tipo de documento */}
-            <View style={styles.documentTypeContainer}>
-              <ThemedText style={styles.inputLabel}>Tipo de documento</ThemedText>
-              <DocumentTypeSelector value={documentType} onChange={setDocumentType} />
-            </View>
-
-            {/* Input de número de documento */}
-            <View style={styles.inputContainer}>
-              <ThemedText style={styles.inputLabel}>Número de documento</ThemedText>
-              <View style={styles.inputWrapper}>
-                <Feather name="user" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  value={documentNumber}
-                  onChangeText={setDocumentNumber}
-                  placeholder="Ingrese su número de documento"
-                  keyboardType="number-pad"
-                  autoCapitalize="none"
-                  placeholderTextColor={colors.textTertiary}
-                />
-              </View>
-              {documentError ? <ThemedText style={styles.errorText}>{documentError}</ThemedText> : null}
-            </View>
-
-            {error && (
-              <View style={styles.errorContainer}>
-                <ThemedText style={styles.errorText}>{error}</ThemedText>
-              </View>
-            )}
-
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading} activeOpacity={0.8}>
-              <ThemedText style={styles.buttonText} type="button">
-                Ingresar
+          <View style={styles.contentContainer}>
+            <View style={styles.logoContainer}>
+              <Image source={require('../../assets/images/logo.png')} style={styles.logoImage} resizeMode="contain" />
+              <ThemedText style={styles.logoText} type="title">
+                Almendros
               </ThemedText>
-            </TouchableOpacity>
+            </View>
+
+            <View style={styles.headerContainer}>
+              <ThemedText style={styles.welcomeText} type="subtitle">
+                Bienvenido
+              </ThemedText>
+              <ThemedText style={styles.subtitleText} type="heading">
+                Ingrese su documento para ver sus pedidos
+              </ThemedText>
+            </View>
+
+            <View style={styles.formContainer}>
+              {/* Selector de tipo de documento */}
+              <View style={styles.formField}>
+                <ThemedText style={styles.inputLabel}>Tipo de documento</ThemedText>
+                <DocumentTypeSelector value={documentType} onChange={setDocumentType} />
+              </View>
+
+              {/* Input de número de documento */}
+              <View style={styles.formField}>
+                <ThemedText style={styles.inputLabel}>Número de documento</ThemedText>
+                <View style={styles.inputWrapper}>
+                  <Feather name="user" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    value={documentNumber}
+                    onChangeText={setDocumentNumber}
+                    placeholder="Ingrese su número de documento"
+                    keyboardType="number-pad"
+                    autoCapitalize="none"
+                    placeholderTextColor={colors.textTertiary}
+                  />
+                </View>
+                {documentError ? <ThemedText style={styles.errorText}>{documentError}</ThemedText> : null}
+              </View>
+
+              {error && (
+                <View style={styles.errorContainer}>
+                  <ThemedText style={styles.errorText}>{error}</ThemedText>
+                </View>
+              )}
+
+              <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading} activeOpacity={0.8}>
+                <ThemedText style={styles.buttonText} type="button">
+                  Ingresar
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {isLoading && <AppLoader />}
@@ -124,52 +127,54 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
   },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    maxWidth: 480,
+    width: '100%',
+    alignSelf: 'center',
+  },
   logoContainer: {
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 60 : 40,
-    marginBottom: 20,
+    marginBottom: 32,
   },
   logoImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: colors.backgroundAlt,
-    padding: 15,
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: colors.background,
   },
   logoText: {
     marginTop: 12,
-    fontSize: typography.sizes.h1,
+    fontSize: 28,
     color: colors.primaryDark,
     fontFamily: typography.fontFamily.serif,
   },
   headerContainer: {
-    paddingHorizontal: 32,
-    marginBottom: 30,
     alignItems: 'center',
+    marginBottom: 40,
   },
   welcomeText: {
-    fontSize: typography.sizes.h3,
+    fontSize: 24,
     color: colors.primary,
     marginBottom: 8,
     fontFamily: typography.fontFamily.sans,
   },
   subtitleText: {
-    fontSize: typography.sizes.body,
+    fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
     fontFamily: typography.fontFamily.sansLight,
   },
   formContainer: {
-    paddingHorizontal: 32,
+    width: '100%',
   },
-  documentTypeContainer: {
-    marginBottom: 20,
-  },
-  inputContainer: {
+  formField: {
     marginBottom: 20,
   },
   inputLabel: {
-    fontSize: typography.sizes.body,
+    fontSize: 14,
     color: colors.text,
     marginBottom: 8,
     fontFamily: typography.fontFamily.sans,
