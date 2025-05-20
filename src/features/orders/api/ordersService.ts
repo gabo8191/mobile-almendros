@@ -1,6 +1,6 @@
 import api from '../../../api/axios';
 import { ENDPOINTS } from '../../../api/endpoints';
-import { Order } from '../types/orders.types';
+import { Order, OrderDetail, OrdersResponse } from '../types/orders.types';
 
 export const getOrders = async (): Promise<Order[]> => {
     try {
@@ -19,5 +19,34 @@ export const getOrderById = async (id: string): Promise<Order> => {
     } catch (error: any) {
         console.error('Get order by ID error:', error);
         throw new Error(error.response?.data?.message || 'Error al obtener el pedido');
+    }
+};
+
+// Añadir nuevos métodos para obtener detalles de compras
+export const getOrderDetails = async (orderId: string): Promise<OrderDetail> => {
+    try {
+        const response = await api.get(`/orders/${orderId}/detail`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        throw error;
+    }
+};
+
+// Método para obtener historial de compras con filtros
+export const getOrderHistory = async (
+    params: {
+        page?: number;
+        limit?: number;
+        startDate?: string;
+        endDate?: string;
+    } = {}
+): Promise<OrdersResponse> => {
+    try {
+        const response = await api.get('/orders/history', { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching order history:', error);
+        throw error;
     }
 };

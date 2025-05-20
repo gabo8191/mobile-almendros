@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getItem, KEYS } from '../shared/utils/secureStorage';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, API_TIMEOUT } from './config';
 
 // Create axios instance
 const api = axios.create({
@@ -9,7 +9,7 @@ const api = axios.create({
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
-    timeout: 10000, // 10 seconds
+    timeout: API_TIMEOUT,
 });
 
 // Request interceptor
