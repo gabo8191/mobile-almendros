@@ -10,7 +10,9 @@ export const login = async (email: string, password: string): Promise<AuthRespon
             password
         };
 
-        const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, credentials);
+        const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN_CLIENT, credentials);
+        console.log('Using endpoint:', ENDPOINTS.AUTH.LOGIN_CLIENT);
+        console.log('Full URL:', api.defaults.baseURL + ENDPOINTS.AUTH.LOGIN_CLIENT);
 
         // Store the token for future requests
         if (response.data.token) {
@@ -32,7 +34,15 @@ export const loginWithDocument = async (documentType: string, documentNumber: st
             documentNumber
         };
 
-        const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN_CLIENT, credentials);
+        console.log('Login attempt with:', credentials);
+        console.log('Endpoint:', ENDPOINTS.AUTH.LOGIN_CLIENT);
+        console.log('Full URL:', api.defaults.baseURL + ENDPOINTS.AUTH.LOGIN_CLIENT);
+
+        const response = await api.post<AuthResponse>(
+            ENDPOINTS.AUTH.LOGIN_CLIENT,
+            credentials,
+            { timeout: 30000 }
+        );
 
         // Store the token for future requests
         if (response.data.token) {
@@ -42,8 +52,13 @@ export const loginWithDocument = async (documentType: string, documentNumber: st
 
         return response.data;
     } catch (error: any) {
-        console.error('Login error:', error);
-        throw new Error(error.response?.data?.message || 'Error durante el inicio de sesión');
+        console.error('Login error details:', {
+            code: error.code,
+            message: error.message,
+            url: error.config?.url,
+            method: error.config?.method
+        });
+        throw new Error('Error durante el inicio de sesión');
     }
 };
 
