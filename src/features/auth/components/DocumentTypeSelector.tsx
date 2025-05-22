@@ -5,7 +5,7 @@ import { colors } from '../../../constants/Colors';
 import { typography } from '../../../constants/Typography';
 import { Feather } from '@expo/vector-icons';
 
-export type DocumentType = 'CC' | 'CE' | 'TI' | 'PA';
+export type DocumentType = 'CC' | 'TI';
 
 type DocumentTypeOption = {
   value: DocumentType;
@@ -15,9 +15,7 @@ type DocumentTypeOption = {
 
 const DOCUMENT_TYPES: DocumentTypeOption[] = [
   { value: 'CC', label: 'CC', description: 'Cédula de Ciudadanía' },
-  { value: 'CE', label: 'CE', description: 'Cédula de Extranjería' },
   { value: 'TI', label: 'TI', description: 'Tarjeta de Identidad' },
-  { value: 'PA', label: 'PA', description: 'Pasaporte' },
 ];
 
 type DocumentTypeSelectorProps = {

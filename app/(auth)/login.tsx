@@ -47,9 +47,14 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     Keyboard.dismiss();
-
+    
     if (validateForm()) {
-      await loginWithDocument(documentType, documentNumber);
+      try {
+        await loginWithDocument(documentType, documentNumber);
+      } catch (error) {
+        // El AuthContext ya maneja los errores específicos
+        console.error('Login error:', error);
+      }
     }
   };
 
