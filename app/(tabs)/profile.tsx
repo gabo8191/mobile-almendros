@@ -7,37 +7,42 @@ import { Feather } from '@expo/vector-icons';
 import { typography } from '../../src/constants/Typography';
 
 export default function ProfileScreen() {
-  const { user, clearStorage } = useAuth();
+  const { user, logout, isLoading } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert('Cerrar Sesión', '¿Está seguro que desea cerrar su sesión?', [
-      {
-        text: 'Cancelar',
-        style: 'cancel',
-      },
-      {
-        text: 'Cerrar Sesión',
-        onPress: async () => {
-          try {
-            // Limpiar storage
-            await clearStorage();
-
-            // Forzar recarga de la página (más confiable que router.replace en web)
-            if (Platform.OS === 'web') {
-              window.location.href = '/login';
-            } else {
-              // En móvil nativo usar router
-              const { router } = require('expo-router');
-              router.replace('/(auth)/login');
-            }
-          } catch (error) {
-            console.error('Logout failed:', error);
-            Alert.alert('Error', 'No se pudo cerrar la sesión correctamente');
-          }
+    // En web, usar window.confirm en lugar de Alert.alert
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('¿Está seguro que desea cerrar su sesión?');
+      if (confirmed) {
+        performLogout();
+      }
+    } else {
+      // En móvil, usar Alert.alert
+      Alert.alert('Cerrar Sesión', '¿Está seguro que desea cerrar su sesión?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
         },
-        style: 'destructive',
-      },
-    ]);
+        {
+          text: 'Cerrar Sesión',
+          onPress: performLogout,
+          style: 'destructive',
+        },
+      ]);
+    }
+  };
+
+  const performLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      if (Platform.OS === 'web') {
+        alert('Error: No se pudo cerrar la sesión correctamente');
+      } else {
+        Alert.alert('Error', 'No se pudo cerrar la sesión correctamente');
+      }
+    }
   };
 
   const menuItems: {
@@ -125,9 +130,14 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={[styles.logoutButton, isLoading && styles.logoutButtonDisabled]}
+          onPress={handleLogout}
+          activeOpacity={0.7}
+          disabled={isLoading}
+        >
           <Feather name="log-out" size={20} color="#fff" />
-          <ThemedText style={styles.logoutText}>Cerrar Sesión</ThemedText>
+          <ThemedText style={styles.logoutText}>{isLoading ? 'Cerrando Sesión...' : 'Cerrar Sesión'}</ThemedText>
         </TouchableOpacity>
 
         <View style={styles.versionContainer}>
@@ -270,6 +280,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
+  },
+  logoutButtonDisabled: {
+    opacity: 0.6,
   },
   logoutText: {
     color: '#fff',

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { router, useSegments } from 'expo-router';
+import { Platform } from 'react-native';
 import { User } from '../../features/auth/types/auth.types';
 import {
   login as loginApi,
@@ -90,6 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch (err) {
+        console.error('Error loading user:', err);
         await clearStorage();
       } finally {
         setIsLoading(false);
@@ -155,17 +157,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
 
     try {
+      // Primero limpiar el storage local
       await clearStorage();
 
+      // Intentar hacer logout en el servidor (pero no bloquear si falla)
       try {
         await logoutApi();
       } catch (serverError) {
+        console.warn('Server logout failed, but continuing with local logout:', serverError);
         // Ignorar errores del servidor, lo importante es limpiar el storage local
       }
 
-      router.replace('/(auth)/login' as any);
+      // Usar diferentes métodos según la plataforma
+      if (Platform.OS === 'web') {
+        // En web, forzar recarga completa
+        window.location.href = '/login';
+      } else {
+        // En móvil, usar router
+        router.replace('/(auth)/login' as any);
+      }
     } catch (err: any) {
-      router.replace('/(auth)/login' as any);
+      console.error('Logout error:', err);
+      // Aún así, intentar redirigir al login
+      if (Platform.OS === 'web') {
+        window.location.href = '/login';
+      } else {
+        router.replace('/(auth)/login' as any);
+      }
     } finally {
       setIsLoading(false);
     }
