@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { router, useSegments } from 'expo-router';
+import { Platform } from 'react-native';
 import { User } from '../../features/auth/types/auth.types';
 import {
   login as loginApi,
@@ -8,6 +9,7 @@ import {
   storeUser,
   loginWithDocument as loginWithDocumentApi,
 } from '../../features/auth/api/authService';
+import { deleteItem, KEYS, saveItem } from '../../shared/utils/secureStorage';
 
 type AuthContextType = {
   user: User | null;
@@ -16,6 +18,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   loginWithDocument: (documentType: string, documentNumber: string) => Promise<void>;
   logout: () => Promise<void>;
+  clearStorage: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -25,6 +28,7 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   loginWithDocument: async () => {},
   logout: async () => {},
+  clearStorage: async () => {},
 });
 
 type AuthProviderProps = {
@@ -37,16 +41,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null);
   const segments = useSegments();
 
+  // Clear storage function
+  const clearStorage = async () => {
+    try {
+      await deleteItem(KEYS.AUTH_TOKEN);
+      await deleteItem(KEYS.AUTH_USER);
+      setUser(null);
+      setError(null);
+    } catch (error) {
+      console.error('Error clearing storage:', error);
+    }
+  };
+
   // Check if user is authenticated and redirect accordingly
   useEffect(() => {
     if (!isLoading) {
       const inAuthGroup = segments[0]?.startsWith('(auth)') ?? false;
 
       if (!user && !inAuthGroup) {
-        // Redirect to login if not authenticated
         router.replace('/(auth)/login' as any);
       } else if (user && inAuthGroup) {
-        // Redirect to main app if already authenticated
         router.replace('/(tabs)' as any);
       }
     }
@@ -56,13 +70,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     async function loadUser() {
       try {
-        const savedUser = await getCurrentUser();
-        if (savedUser) {
-          setUser(savedUser);
+        // En desarrollo, limpiar storage si hay datos de sesión anterior
+        if (__DEV__) {
+          const isInitialized = (await getCurrentUser()) !== null;
+          if (isInitialized) {
+            await clearStorage();
+            setIsLoading(false);
+            return;
+          }
         }
-        setIsLoading(false);
+
+        const savedUser = await getCurrentUser();
+
+        if (savedUser) {
+          // Verificar que el usuario tenga la estructura correcta
+          if (savedUser.id && (savedUser.role || savedUser.documentType)) {
+            setUser(savedUser);
+          } else {
+            await clearStorage();
+          }
+        }
       } catch (err) {
-        console.error('Failed to load user:', err);
+        console.error('Error loading user:', err);
+        await clearStorage();
+      } finally {
         setIsLoading(false);
       }
     }
@@ -76,16 +107,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const response = await loginApi(email, password);
-
-      // Save user data
       setUser(response.user);
       await storeUser(response.user);
 
-      // Redirect to orders tab
+      if (__DEV__) {
+        await saveItem('app_storage_initialized', 'true');
+      }
+
       router.replace('/(tabs)' as any);
     } catch (err: any) {
       setError('Credenciales inválidas. Por favor intente nuevamente.');
-      console.error('Login failed:', err);
     } finally {
       setIsLoading(false);
     }
@@ -97,26 +128,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const response = await loginWithDocumentApi(documentType, documentNumber);
-
-      // Save user data
       setUser(response.user);
       await storeUser(response.user);
 
-      // Redirect to orders tab
-      router.replace('/(tabs)' as any);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error durante el inicio de sesión';
-
-      // Proporcionamos mensajes de error específicos según el tipo de documento
-      if (errorMessage.includes('no encontrado') || errorMessage.includes('not found')) {
-        setError(`El documento ${documentType} ${documentNumber} no se encuentra registrado.`);
-      } else if (errorMessage.includes('inactivo') || errorMessage.includes('inactive')) {
-        setError('Su cuenta está inactiva. Por favor contacte a soporte.');
-      } else {
-        setError('Documento inválido. Por favor intente nuevamente.');
+      if (__DEV__) {
+        await saveItem('app_storage_initialized', 'true');
       }
 
-      console.error('Login failed:', err);
+      router.replace('/(tabs)' as any);
+    } catch (err: any) {
+      let errorMessage = 'Error durante el inicio de sesión';
+
+      if (err.response?.status === 404) {
+        errorMessage = `El documento ${documentType} ${documentNumber} no se encuentra registrado.`;
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Su cuenta está inactiva. Por favor contacte a soporte.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -126,22 +157,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
 
     try {
-      await logoutApi();
-      setUser(null);
-      router.replace('/(auth)/login' as any);
+      // Primero limpiar el storage local
+      await clearStorage();
+
+      // Intentar hacer logout en el servidor (pero no bloquear si falla)
+      try {
+        await logoutApi();
+      } catch (serverError) {
+        console.warn('Server logout failed, but continuing with local logout:', serverError);
+        // Ignorar errores del servidor, lo importante es limpiar el storage local
+      }
+
+      // Usar diferentes métodos según la plataforma
+      if (Platform.OS === 'web') {
+        // En web, forzar recarga completa
+        window.location.href = '/login';
+      } else {
+        // En móvil, usar router
+        router.replace('/(auth)/login' as any);
+      }
     } catch (err: any) {
-      console.error('Logout failed:', err);
+      console.error('Logout error:', err);
+      // Aún así, intentar redirigir al login
+      if (Platform.OS === 'web') {
+        window.location.href = '/login';
+      } else {
+        router.replace('/(auth)/login' as any);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, error, login, loginWithDocument, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        error,
+        login,
+        loginWithDocument,
+        logout,
+        clearStorage,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }
 
-// Hook para fácil acceso al contexto
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (!context) {

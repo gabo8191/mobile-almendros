@@ -9,7 +9,7 @@ export const ENDPOINTS = {
         GET_CLIENT: (id: string) => `/clients/${id}`,
     },
     ORDERS: {
-        GET_ALL: '/clients',
-        GET_BY_ID: (id: string) => `/clients/${id}`,
+        GET_ALL: '/mobile/client/orders',
+        GET_BY_ID: (id: string) => `/mobile/client/orders/${id}`,
     }
 };

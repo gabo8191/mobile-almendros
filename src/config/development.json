@@ -1,7 +1,7 @@
 {
     "api": {
-        "baseUrl": "http://192.168.173.89:3000/",
-        "timeout": 10000
+        "baseUrl": "http://192.168.20.11:3000",
+        "timeout": 30000
     },
     "auth": {
         "storageKeys": {

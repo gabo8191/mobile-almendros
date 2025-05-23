@@ -11,6 +11,8 @@ export const login = async (email: string, password: string): Promise<AuthRespon
         };
 
         const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, credentials);
+        console.log('Using endpoint:', ENDPOINTS.AUTH.LOGIN);
+        console.log('Full URL:', api.defaults.baseURL + ENDPOINTS.AUTH.LOGIN);
 
         // Store the token for future requests
         if (response.data.token) {
@@ -32,7 +34,22 @@ export const loginWithDocument = async (documentType: string, documentNumber: st
             documentNumber
         };
 
-        const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN_CLIENT, credentials);
+        console.log('Login attempt with:', credentials);
+        console.log('Endpoint:', ENDPOINTS.AUTH.LOGIN_CLIENT);
+        console.log('Full URL:', api.defaults.baseURL + ENDPOINTS.AUTH.LOGIN_CLIENT);
+
+        const response = await api.post<AuthResponse>(
+            ENDPOINTS.AUTH.LOGIN_CLIENT,
+            credentials,
+            {
+                timeout: 30000,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
+
+        console.log('Login response:', response.data);
 
         // Store the token for future requests
         if (response.data.token) {
@@ -42,8 +59,25 @@ export const loginWithDocument = async (documentType: string, documentNumber: st
 
         return response.data;
     } catch (error: any) {
-        console.error('Login error:', error);
-        throw new Error(error.response?.data?.message || 'Error durante el inicio de sesión');
+        console.error('Login error details:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message,
+            url: error.config?.url,
+            method: error.config?.method
+        });
+
+        // Re-throw the error with better message handling
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        } else if (error.response?.status === 404) {
+            throw new Error(`Cliente con documento ${documentType} ${documentNumber} no encontrado o inactivo`);
+        } else if (error.response?.status === 401) {
+            throw new Error('Documento inválido. Por favor intente nuevamente.');
+        } else {
+            throw new Error('Error durante el inicio de sesión. Verifique su conexión.');
+        }
     }
 };
 
