@@ -2,7 +2,6 @@ import axios from 'axios';
 import { getItem, KEYS } from '../shared/utils/secureStorage';
 import { API_BASE_URL, API_TIMEOUT } from './config';
 
-// Create axios instance
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
@@ -15,13 +14,28 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     async (config) => {
-        const token = await getItem(KEYS.AUTH_TOKEN);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        try {
+            const token = await getItem(KEYS.AUTH_TOKEN);
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+                console.log('Token added to request:', token.substring(0, 20) + '...');
+            } else {
+                console.log('No token found in storage');
+            }
+        } catch (error) {
+            console.error('Error getting token from storage:', error);
         }
+
+        // Safe logging with null checks
+        const baseUrl = config.baseURL || 'Unknown base URL';
+        const url = config.url || 'Unknown URL';
+        console.log('Making request to:', baseUrl + url);
+        console.log('Request headers:', config.headers);
+
         return config;
     },
     (error) => {
+        console.error('Request interceptor error:', error);
         return Promise.reject(error);
     }
 );
@@ -29,17 +43,25 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
     (response) => {
+        const url = response.config?.url || 'Unknown URL';
+        console.log('Response received:', response.status, url);
         return response;
     },
     (error) => {
-        const { response } = error;
+        const { response, request } = error;
+
+        console.error('Response error:', {
+            status: response?.status,
+            statusText: response?.statusText,
+            data: response?.data,
+            url: request?.responseURL || response?.config?.url || 'Unknown URL'
+        });
 
         if (response) {
             switch (response.status) {
                 case 401:
-                    // Handle unauthorized error
-                    console.error('Authentication error');
-                    // You could redirect to login here
+                    console.error('Authentication error - redirecting to login');
+                    // You could redirect to login here if needed
                     break;
                 case 403:
                     console.error('Permission denied');
@@ -53,7 +75,7 @@ api.interceptors.response.use(
                 default:
                     console.error(`Request failed with status: ${response.status}`);
             }
-        } else if (error.request) {
+        } else if (request) {
             console.error('Network error - no response received');
         } else {
             console.error('Error setting up request:', error.message);

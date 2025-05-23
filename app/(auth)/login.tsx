@@ -47,7 +47,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     Keyboard.dismiss();
-    
+
     if (validateForm()) {
       try {
         await loginWithDocument(documentType, documentNumber);
