@@ -34,7 +34,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "environment": "development"
+      "environment": "development",
+      "devForceLogin": false
     }
   }
 }

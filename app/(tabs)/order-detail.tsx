@@ -1,27 +1,95 @@
-import React, { useCallback } from 'react';
-import { View, StyleSheet, RefreshControl, SafeAreaView, Platform, FlatList, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { colors } from '../../src/constants/Colors';
 import { AppLoader } from '../../src/shared/components/AppLoader';
-import { OrderCard } from '../../src/features/orders/components/OrderCard';
-import { EmptyState } from '../../src/shared/components/ui/EmptyState';
 import { useOrders } from '../../src/features/orders/context/OrdersContext';
 import { Feather } from '@expo/vector-icons';
 import { Order } from '../../src/features/orders/types/orders.types';
 import { typography } from '../../src/constants/Typography';
+import { formatDate, formatCurrency } from '../../src/shared/utils/formatters';
+import { OrderStatusBadge } from '../../src/features/orders/components/OrderStatusBadge';
+import { PurchaseStatusTracker } from '../../src/features/orders/components/PurchaseStatusTracker';
+import { DeliveryInfoCard } from '../../src/features/orders/components/DeliveryInfoCard';
+import { SupportContactCard } from '../../src/features/orders/components/SupportContactCard';
 
-export default function OrdersScreen() {
-  const { orders, isLoading, isRefreshing, refreshOrders, error } = useOrders();
+export default function OrderDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { getOrderById } = useOrders();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const renderItem = useCallback(({ item }: { item: Order }) => {
-    return <OrderCard order={item} />;
-  }, []);
+  useEffect(() => {
+    if (id) {
+      fetchOrderDetails();
+    }
+  }, [id]);
 
-  if (isLoading && !isRefreshing) {
+  const fetchOrderDetails = async () => {
+    if (!id) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      console.log('Fetching order details for ID:', id);
+
+      const orderData = await getOrderById(id);
+      if (orderData) {
+        setOrder(orderData);
+        console.log('Order details loaded:', orderData.orderNumber);
+      } else {
+        setError('No se encontró el pedido solicitado');
+      }
+    } catch (err: any) {
+      console.error('Error fetching order details:', err);
+      setError(err.message || 'Error al cargar los detalles del pedido');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoBack = () => {
+    router.back();
+  };
+
+  if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <AppLoader size="large" color={colors.primary} />
-      </View>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
+        <View style={styles.loadingContainer}>
+          <AppLoader size="large" color={colors.primary} />
+          <ThemedText style={styles.loadingText}>Cargando detalles del pedido...</ThemedText>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
+
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
+            <Feather name="arrow-left" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <ThemedText style={styles.headerTitle}>Detalles del Pedido</ThemedText>
+          <View style={styles.placeholder} />
+        </View>
+
+        <View style={styles.errorContainer}>
+          <View style={styles.errorContent}>
+            <Feather name="alert-circle" size={56} color={colors.error} />
+            <ThemedText style={styles.errorTitle}>Error al cargar</ThemedText>
+            <ThemedText style={styles.errorMessage}>{error || 'No se pudo encontrar el pedido solicitado'}</ThemedText>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchOrderDetails} activeOpacity={0.7}>
+              <ThemedText style={styles.retryButtonText}>Intentar nuevamente</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -29,41 +97,97 @@ export default function OrdersScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
+      {/* Header con navegación */}
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Mis Pedidos</ThemedText>
-        <ThemedText style={styles.subtitle}>Consulta el estado de tus compras</ThemedText>
+        <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
+          <Feather name="arrow-left" size={24} color={colors.primary} />
+        </TouchableOpacity>
+        <ThemedText style={styles.headerTitle}>Detalles del Pedido</ThemedText>
+        <View style={styles.placeholder} />
       </View>
 
-      {error && (
-        <View style={styles.errorContainer}>
-          <Feather name="alert-circle" size={20} color={colors.error} style={styles.errorIcon} />
-          <ThemedText style={styles.errorText}>{error}</ThemedText>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Información principal del pedido */}
+        <View style={styles.orderHeader}>
+          <View style={styles.orderTitleRow}>
+            <ThemedText style={styles.orderNumber}>#{order.orderNumber}</ThemedText>
+            <OrderStatusBadge status={order.status} size="large" />
+          </View>
+          <ThemedText style={styles.orderDate}>{formatDate(order.date)}</ThemedText>
         </View>
-      )}
 
-      <FlatList
-        data={orders}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        contentContainerStyle={orders.length === 0 ? styles.emptyContent : styles.listContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={refreshOrders}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-        ListEmptyComponent={
-          <EmptyState
-            icon={<Feather name="package" size={56} color={colors.primary} />}
-            title="No hay pedidos"
-            description="Aún no tienes pedidos registrados en tu cuenta. Cuando realices tu primera compra aparecerá aquí."
-          />
-        }
-      />
+        {/* Tracker de estado */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Estado del Pedido</ThemedText>
+          <PurchaseStatusTracker currentStatus={order.status} />
+        </View>
+
+        {/* Información de entrega */}
+        <DeliveryInfoCard address={order.address} date={order.date} />
+
+        {/* Items del pedido */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Productos Pedidos</ThemedText>
+          <View style={styles.itemsContainer}>
+            {order.items.map((item, index) => (
+              <View key={item.id} style={styles.orderItem}>
+                <View style={styles.itemInfo}>
+                  <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+                  <ThemedText style={styles.itemDetails}>
+                    Cantidad: {item.quantity} × {formatCurrency(item.price)}
+                  </ThemedText>
+                </View>
+                <ThemedText style={styles.itemTotal}>{formatCurrency(item.quantity * item.price)}</ThemedText>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Resumen de costos */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Resumen de Pago</ThemedText>
+          <View style={styles.costSummary}>
+            <View style={styles.costRow}>
+              <ThemedText style={styles.costLabel}>Subtotal</ThemedText>
+              <ThemedText style={styles.costValue}>{formatCurrency(order.subtotal)}</ThemedText>
+            </View>
+
+            {order.tax > 0 && (
+              <View style={styles.costRow}>
+                <ThemedText style={styles.costLabel}>Impuestos</ThemedText>
+                <ThemedText style={styles.costValue}>{formatCurrency(order.tax)}</ThemedText>
+              </View>
+            )}
+
+            {order.shipping > 0 && (
+              <View style={styles.costRow}>
+                <ThemedText style={styles.costLabel}>Envío</ThemedText>
+                <ThemedText style={styles.costValue}>{formatCurrency(order.shipping)}</ThemedText>
+              </View>
+            )}
+
+            <View style={styles.divider} />
+            <View style={styles.costRow}>
+              <ThemedText style={styles.totalLabel}>Total</ThemedText>
+              <ThemedText style={styles.totalValue}>{formatCurrency(order.total)}</ThemedText>
+            </View>
+          </View>
+        </View>
+
+        {/* Información de pago */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Método de Pago</ThemedText>
+          <View style={styles.paymentInfo}>
+            <Feather name="credit-card" size={20} color={colors.primary} style={styles.paymentIcon} />
+            <ThemedText style={styles.paymentMethod}>{order.paymentMethod}</ThemedText>
+          </View>
+        </View>
+
+        {/* Contacto de soporte */}
+        <SupportContactCard orderNumber={order.orderNumber} />
+
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -74,61 +198,199 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 12 : 24,
     paddingBottom: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
-  title: {
-    fontFamily: typography.fontFamily.sansBold,
-    fontSize: typography.sizes.h2,
-    color: colors.text,
-    marginLeft: 4,
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: `${colors.primary}10`,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  subtitle: {
-    fontFamily: typography.fontFamily.sans,
-    fontSize: typography.sizes.body,
-    color: colors.textSecondary,
-    marginTop: 4,
-    marginLeft: 4,
+  headerTitle: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h3,
+    color: colors.text,
+  },
+  placeholder: {
+    width: 44,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    padding: 20,
   },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  emptyContent: {
-    flex: 1,
-    padding: 16,
-    paddingBottom: 100,
-  },
-  separator: {
-    height: 16,
+  loadingText: {
+    marginTop: 16,
+    textAlign: 'center',
+    color: colors.textSecondary,
   },
   errorContainer: {
-    margin: 16,
-    padding: 16,
-    backgroundColor: 'rgba(211, 47, 47, 0.08)',
-    borderRadius: 12,
-    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: colors.error,
+    padding: 20,
   },
-  errorIcon: {
-    marginRight: 8,
+  errorContent: {
+    alignItems: 'center',
+    maxWidth: 300,
   },
-  errorText: {
+  errorTitle: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h3,
+    color: colors.error,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: colors.textLight,
+    fontFamily: typography.fontFamily.sansBold,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  orderHeader: {
+    backgroundColor: colors.surface,
+    padding: 20,
+    marginBottom: 16,
+  },
+  orderTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  orderNumber: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h2,
+    color: colors.primary,
+  },
+  orderDate: {
     fontFamily: typography.fontFamily.sans,
     fontSize: typography.sizes.body,
-    color: colors.error,
+    color: colors.textSecondary,
+  },
+  section: {
+    backgroundColor: colors.surface,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h4,
+    color: colors.text,
+    marginBottom: 16,
+  },
+  itemsContainer: {
+    gap: 12,
+  },
+  orderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  itemInfo: {
     flex: 1,
+    marginRight: 16,
+  },
+  itemName: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.body,
+    color: colors.text,
+    marginBottom: 4,
+  },
+  itemDetails: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.sizes.caption,
+    color: colors.textSecondary,
+  },
+  itemTotal: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.body,
+    color: colors.primary,
+  },
+  costSummary: {
+    gap: 8,
+  },
+  costRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  costLabel: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.sizes.body,
+    color: colors.textSecondary,
+  },
+  costValue: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.body,
+    color: colors.text,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.divider,
+    marginVertical: 8,
+  },
+  totalLabel: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h4,
+    color: colors.text,
+  },
+  totalValue: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.h4,
+    color: colors.primary,
+  },
+  paymentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: colors.backgroundAlt,
+    borderRadius: 8,
+  },
+  paymentIcon: {
+    marginRight: 12,
+  },
+  paymentMethod: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.sizes.body,
+    color: colors.text,
+  },
+  bottomSpacing: {
+    height: 100,
   },
 });
