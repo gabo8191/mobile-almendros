@@ -14,6 +14,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     console.log('🚀 App layout mounted');
+    console.log('🌐 Platform:', Platform.OS);
+    console.log('🔧 DEV mode:', __DEV__);
 
     const timer = setTimeout(() => {
       console.log('🎬 Hiding splash screen');
@@ -31,6 +33,7 @@ export default function RootLayout() {
           animation: Platform.OS === 'ios' ? 'default' : 'fade',
         }}
       >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>

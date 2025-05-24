@@ -23,7 +23,8 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
       "expo-router",
@@ -33,7 +34,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "environment": "development"
+      "environment": "development",
+      "devForceLogin": false
     }
   }
 }

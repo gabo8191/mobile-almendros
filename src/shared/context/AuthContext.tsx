@@ -40,6 +40,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const segments = useSegments();
 
+  const shouldForceLogin = () => {
+    const isDev = __DEV__;
+    const envForceLogin = process.env.EXPO_PUBLIC_DEV_FORCE_LOGIN === 'true';
+
+    console.log('🔧 Dev config check:', {
+      isDevelopment: isDev,
+      envForceLogin: envForceLogin,
+      shouldForce: isDev && envForceLogin,
+    });
+
+    return isDev && envForceLogin;
+  };
+
   // Función para limpiar el almacenamiento
   const clearStorage = async () => {
     try {
@@ -47,12 +60,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await deleteItem(KEYS.AUTH_USER);
       setUser(null);
       setError(null);
+      console.log('🧹 Storage cleared successfully');
     } catch (error) {
-      console.error('Error clearing storage:', error);
+      console.error('❌ Error clearing storage:', error);
     }
   };
 
-  // Limpiar errores manualmente
   const clearError = () => {
     setError(null);
   };
@@ -62,6 +75,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     async function loadUser() {
       try {
         console.log('🔄 Loading user from storage...');
+
+        if (shouldForceLogin()) {
+          console.log('🔧 DESARROLLO: Forzando login según configuración (.env)');
+          await clearStorage();
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        }
 
         const hasSession = await hasActiveSession();
         if (!hasSession) {
