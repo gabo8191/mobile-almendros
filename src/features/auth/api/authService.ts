@@ -1,32 +1,11 @@
 import api from '../../../api/axios';
 import { ENDPOINTS } from '../../../api/endpoints';
-import { LoginCredentials, User, AuthResponse, DocumentCredentials } from '../types/auth.types';
+import { User, AuthResponse, DocumentCredentials } from '../types/auth.types';
 import { saveItem, getItem, deleteItem, getObject, saveObject, KEYS } from '../../../shared/utils/secureStorage';
 
-export const login = async (email: string, password: string): Promise<AuthResponse> => {
-    try {
-        const credentials: LoginCredentials = {
-            email,
-            password
-        };
-
-        const response = await api.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, credentials);
-        console.log('Using endpoint:', ENDPOINTS.AUTH.LOGIN);
-        console.log('Full URL:', api.defaults.baseURL + ENDPOINTS.AUTH.LOGIN);
-
-        // Store the token for future requests
-        if (response.data.token) {
-            await saveItem(KEYS.AUTH_TOKEN, response.data.token);
-            await saveObject(KEYS.AUTH_USER, response.data.user);
-        }
-
-        return response.data;
-    } catch (error: any) {
-        console.error('Login error:', error);
-        throw new Error(error.response?.data?.message || 'Error durante el inicio de sesión');
-    }
-};
-
+/**
+ * Autentica un cliente usando tipo y número de documento
+ */
 export const loginWithDocument = async (documentType: string, documentNumber: string): Promise<AuthResponse> => {
     try {
         const credentials: DocumentCredentials = {
@@ -49,9 +28,9 @@ export const loginWithDocument = async (documentType: string, documentNumber: st
             }
         );
 
-        console.log('Login response:', response.data);
+        console.log('Login response successful');
 
-        // Store the token for future requests
+        // Almacenar token y usuario para sesiones futuras
         if (response.data.token) {
             await saveItem(KEYS.AUTH_TOKEN, response.data.token);
             await saveObject(KEYS.AUTH_USER, response.data.user);
@@ -68,29 +47,38 @@ export const loginWithDocument = async (documentType: string, documentNumber: st
             method: error.config?.method
         });
 
-        // Re-throw the error with better message handling
+        // Manejo de errores específicos
         if (error.response?.data?.message) {
             throw new Error(error.response.data.message);
         } else if (error.response?.status === 404) {
             throw new Error(`Cliente con documento ${documentType} ${documentNumber} no encontrado o inactivo`);
         } else if (error.response?.status === 401) {
             throw new Error('Documento inválido. Por favor intente nuevamente.');
+        } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+            throw new Error('Error de conexión. Verifique su red e intente nuevamente.');
         } else {
-            throw new Error('Error durante el inicio de sesión. Verifique su conexión.');
+            throw new Error('Error durante el inicio de sesión. Intente nuevamente.');
         }
     }
 };
 
+/**
+ * Cierra la sesión del usuario actual
+ */
 export const logout = async (): Promise<void> => {
     try {
         await deleteItem(KEYS.AUTH_TOKEN);
         await deleteItem(KEYS.AUTH_USER);
+        console.log('Session closed successfully');
     } catch (error) {
         console.error('Logout error:', error);
         throw new Error('Error al cerrar sesión');
     }
 };
 
+/**
+ * Obtiene el usuario actual desde el almacenamiento
+ */
 export const getCurrentUser = async (): Promise<User | null> => {
     try {
         return await getObject<User>(KEYS.AUTH_USER);
@@ -100,10 +88,28 @@ export const getCurrentUser = async (): Promise<User | null> => {
     }
 };
 
+/**
+ * Almacena información del usuario
+ */
 export const storeUser = async (user: User): Promise<void> => {
     try {
         await saveObject(KEYS.AUTH_USER, user);
     } catch (error) {
         console.error('Store user error:', error);
+        throw new Error('Error al almacenar información del usuario');
+    }
+};
+
+/**
+ * Verifica si hay una sesión activa
+ */
+export const hasActiveSession = async (): Promise<boolean> => {
+    try {
+        const token = await getItem(KEYS.AUTH_TOKEN);
+        const user = await getCurrentUser();
+        return !!(token && user);
+    } catch (error) {
+        console.error('Error checking active session:', error);
+        return false;
     }
 };

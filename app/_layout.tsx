@@ -18,10 +18,12 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Stack screenOptions={{
-        headerShown: false,
-        animation: Platform.OS === 'ios' ? 'default' : 'fade',
-      }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: Platform.OS === 'ios' ? 'default' : 'fade',
+        }}
+      >
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
