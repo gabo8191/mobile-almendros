@@ -5,6 +5,7 @@ export type OrderItem = {
     name: string;
     quantity: number;
     price: number;
+    description?: string;
 };
 
 export type Order = {
@@ -19,6 +20,8 @@ export type Order = {
     total: number;
     address: string;
     paymentMethod: string;
+    clientId?: number;
+    userId?: string;
 };
 
 export interface OrderProduct {
@@ -27,22 +30,52 @@ export interface OrderProduct {
     quantity: number;
     unitPrice: number;
     subtotal: number;
+    description?: string;
     imageUrl?: string;
 }
 
 export interface OrderDetail extends Order {
     store: string;
-    paymentMethod: string;
     products: OrderProduct[];
-    subtotal: number;
-    tax: number;
     discount?: number;
     deliveryAddress?: string;
+    notes?: string;
+    client?: {
+        id: number;
+        name: string;
+        email?: string;
+        phoneNumber?: string;
+    };
+    user?: {
+        id: string;
+        firstName: string;
+        lastName: string;
+    };
 }
 
 export interface OrdersResponse {
-    orders: Order[];
-    totalOrders: number;
-    totalPages: number;
-    currentPage: number;
+    data: Order[];
+    message: string;
+    meta?: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
+    };
+}
+
+export interface OrderFilters {
+    page?: number;
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: OrderStatus;
+}
+
+export interface ReorderResponse {
+    success: boolean;
+    message: string;
+    orderId?: string;
 }

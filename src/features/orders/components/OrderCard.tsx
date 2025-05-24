@@ -12,15 +12,37 @@ import { typography } from '../../../constants/Typography';
 type OrderCardProps = {
   order: Order;
 };
+
 export function OrderCard({ order }: OrderCardProps) {
   const handlePress = () => {
-    router.push(`/(tabs)/(orders)/${order.id}`);
+    // Debug logs
+    console.log('OrderCard pressed:', {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      navigatingTo: `/(tabs)/(orders)/${order.id}`,
+    });
+
+    // Asegurarse de que tenemos un ID válido
+    if (order.id && order.id !== 'undefined') {
+      router.push(`/(tabs)/(orders)/${order.id}` as any);
+    } else {
+      console.error('Invalid order ID:', order.id);
+      alert('Error: ID de pedido inválido');
+    }
   };
+
+  // Debug: Verificar que tenemos datos válidos
+  console.log('OrderCard render:', {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    hasItems: order.items?.length > 0,
+    total: order.total,
+  });
 
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <ThemedText style={styles.orderNumber}>Pedido #{order.orderNumber}</ThemedText>
+        <ThemedText style={styles.orderNumber}>{order.orderNumber || `Pedido #${order.id}`}</ThemedText>
         <OrderStatusBadge status={order.status} />
       </View>
 
@@ -35,7 +57,7 @@ export function OrderCard({ order }: OrderCardProps) {
           <View style={styles.infoItem}>
             <Feather name="package" size={16} color={colors.textSecondary} style={styles.infoIcon} />
             <ThemedText style={styles.infoLabel}>Productos:</ThemedText>
-            <ThemedText style={styles.infoValue}>{order.items.length}</ThemedText>
+            <ThemedText style={styles.infoValue}>{order.items?.length || 0}</ThemedText>
           </View>
         </View>
 
