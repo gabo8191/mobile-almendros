@@ -13,7 +13,14 @@ export default function RootLayout() {
   useFrameworkReady();
 
   useEffect(() => {
-    SplashScreen.hideAsync();
+    console.log('🚀 App layout mounted');
+
+    const timer = setTimeout(() => {
+      console.log('🎬 Hiding splash screen');
+      SplashScreen.hideAsync();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
