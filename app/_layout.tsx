@@ -13,15 +13,24 @@ export default function RootLayout() {
   useFrameworkReady();
 
   useEffect(() => {
-    SplashScreen.hideAsync();
+    console.log('🚀 App layout mounted');
+
+    const timer = setTimeout(() => {
+      console.log('🎬 Hiding splash screen');
+      SplashScreen.hideAsync();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <AuthProvider>
-      <Stack screenOptions={{
-        headerShown: false,
-        animation: Platform.OS === 'ios' ? 'default' : 'fade',
-      }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: Platform.OS === 'ios' ? 'default' : 'fade',
+        }}
+      >
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>

@@ -44,9 +44,9 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="orders"
           options={{
-            title: 'Pedidos',
+            title: 'Mis Pedidos',
             tabBarIcon: ({ color, size }) => (
               <View style={styles.iconContainer}>
                 <Feather name="package" size={size} color={color} />
@@ -57,12 +57,19 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Perfil',
+            title: 'Mi Perfil',
             tabBarIcon: ({ color, size }) => (
               <View style={styles.iconContainer}>
                 <Feather name="user" size={size} color={color} />
               </View>
             ),
+          }}
+        />
+        {/* Ocultar la ruta de detalle de las pestañas */}
+        <Tabs.Screen
+          name="order-detail"
+          options={{
+            href: null, // Esto oculta la pestaña
           }}
         />
       </Tabs>

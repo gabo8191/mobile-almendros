@@ -3,11 +3,11 @@ import { router, useSegments } from 'expo-router';
 import { Platform } from 'react-native';
 import { User } from '../../features/auth/types/auth.types';
 import {
-  login as loginApi,
   logout as logoutApi,
   getCurrentUser,
   storeUser,
   loginWithDocument as loginWithDocumentApi,
+  hasActiveSession,
 } from '../../features/auth/api/authService';
 import { deleteItem, KEYS, saveItem } from '../../shared/utils/secureStorage';
 
@@ -15,20 +15,18 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
   loginWithDocument: (documentType: string, documentNumber: string) => Promise<void>;
   logout: () => Promise<void>;
-  clearStorage: () => Promise<void>;
+  clearError: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: false,
   error: null,
-  login: async () => {},
   loginWithDocument: async () => {},
   logout: async () => {},
-  clearStorage: async () => {},
+  clearError: () => {},
 });
 
 type AuthProviderProps = {
@@ -39,9 +37,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const segments = useSegments();
 
-  // Clear storage function
+  // Función para limpiar el almacenamiento
   const clearStorage = async () => {
     try {
       await deleteItem(KEYS.AUTH_TOKEN);
@@ -53,100 +52,119 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Check if user is authenticated and redirect accordingly
-  useEffect(() => {
-    if (!isLoading) {
-      const inAuthGroup = segments[0]?.startsWith('(auth)') ?? false;
+  // Limpiar errores manualmente
+  const clearError = () => {
+    setError(null);
+  };
 
-      if (!user && !inAuthGroup) {
-        router.replace('/(auth)/login' as any);
-      } else if (user && inAuthGroup) {
-        router.replace('/(tabs)' as any);
-      }
-    }
-  }, [user, isLoading, segments]);
-
-  // Load saved user on app start
+  // Cargar usuario guardado al iniciar
   useEffect(() => {
     async function loadUser() {
       try {
-        // En desarrollo, limpiar storage si hay datos de sesión anterior
-        if (__DEV__) {
-          const isInitialized = (await getCurrentUser()) !== null;
-          if (isInitialized) {
-            await clearStorage();
-            setIsLoading(false);
-            return;
-          }
+        console.log('🔄 Loading user from storage...');
+
+        const hasSession = await hasActiveSession();
+        if (!hasSession) {
+          console.log('❌ No active session found');
+          await clearStorage();
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
         }
 
         const savedUser = await getCurrentUser();
+        console.log('👤 Retrieved user from storage:', savedUser?.documentNumber);
 
         if (savedUser) {
-          // Verificar que el usuario tenga la estructura correcta
-          if (savedUser.id && (savedUser.role || savedUser.documentType)) {
+          if (savedUser.id && savedUser.documentType && savedUser.documentNumber) {
             setUser(savedUser);
+            console.log('✅ User loaded successfully:', savedUser.documentType, savedUser.documentNumber);
           } else {
+            console.log('❌ Invalid user data, clearing storage');
             await clearStorage();
           }
         }
       } catch (err) {
-        console.error('Error loading user:', err);
+        console.error('❌ Error loading user:', err);
         await clearStorage();
       } finally {
         setIsLoading(false);
+        setIsInitialized(true);
       }
     }
 
     loadUser();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await loginApi(email, password);
-      setUser(response.user);
-      await storeUser(response.user);
-
-      if (__DEV__) {
-        await saveItem('app_storage_initialized', 'true');
-      }
-
-      router.replace('/(tabs)' as any);
-    } catch (err: any) {
-      setError('Credenciales inválidas. Por favor intente nuevamente.');
-    } finally {
-      setIsLoading(false);
+  // Verificar autenticación y redireccionar
+  useEffect(() => {
+    if (!isInitialized) {
+      console.log('⏳ Waiting for initialization...');
+      return;
     }
-  };
+
+    const inAuthGroup = segments[0]?.startsWith('(auth)') ?? false;
+
+    console.log('🔀 Navigation check:', {
+      hasUser: !!user,
+      inAuthGroup,
+      currentSegment: segments[0],
+      isLoading,
+    });
+
+    if (!user && !inAuthGroup) {
+      console.log('🔄 Redirecting to login - no user');
+      router.replace('/(auth)/login' as any);
+    } else if (user && inAuthGroup) {
+      console.log('🔄 Redirecting to orders - user authenticated');
+      router.replace('/(tabs)/orders' as any);
+    }
+  }, [user, isInitialized, segments]);
 
   const loginWithDocument = async (documentType: string, documentNumber: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
+      console.log('🔐 Attempting login with:', documentType, documentNumber);
       const response = await loginWithDocumentApi(documentType, documentNumber);
-      setUser(response.user);
-      await storeUser(response.user);
 
+      const transformedUser: User = {
+        id: response.user.id.toString(),
+        email: response.user.email,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        phoneNumber: '',
+        address: '',
+        documentType: response.user.documentType,
+        documentNumber: response.user.documentNumber,
+        isActive: response.user.isActive,
+        createdAt: response.user.createdAt,
+        updatedAt: response.user.updatedAt,
+      };
+
+      setUser(transformedUser);
+      await storeUser(transformedUser);
+
+      // Marcar que la app está inicializada
       if (__DEV__) {
         await saveItem('app_storage_initialized', 'true');
       }
 
-      router.replace('/(tabs)' as any);
+      console.log('✅ Login successful, redirecting to orders');
+      router.replace('/(tabs)/orders' as any);
     } catch (err: any) {
       let errorMessage = 'Error durante el inicio de sesión';
 
-      if (err.response?.status === 404) {
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.response?.status === 404) {
         errorMessage = `El documento ${documentType} ${documentNumber} no se encuentra registrado.`;
       } else if (err.response?.status === 401) {
         errorMessage = 'Su cuenta está inactiva. Por favor contacte a soporte.';
-      } else if (err.message) {
-        errorMessage = err.message;
       }
 
+      console.error('❌ Login failed:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -157,33 +175,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
 
     try {
-      // Primero limpiar el storage local
+      console.log('🚪 Logging out...');
+
+      // Limpiar storage local primero
       await clearStorage();
 
-      // Intentar hacer logout en el servidor (pero no bloquear si falla)
+      // Intentar logout en servidor (no bloquear si falla)
       try {
         await logoutApi();
       } catch (serverError) {
-        console.warn('Server logout failed, but continuing with local logout:', serverError);
-        // Ignorar errores del servidor, lo importante es limpiar el storage local
+        console.warn('⚠️ Server logout failed, but continuing with local logout:', serverError);
       }
 
-      // Usar diferentes métodos según la plataforma
-      if (Platform.OS === 'web') {
-        // En web, forzar recarga completa
-        window.location.href = '/login';
-      } else {
-        // En móvil, usar router
-        router.replace('/(auth)/login' as any);
-      }
+      console.log('✅ Logout successful, redirecting to login');
+
+      router.replace('/(auth)/login' as any);
     } catch (err: any) {
-      console.error('Logout error:', err);
-      // Aún así, intentar redirigir al login
-      if (Platform.OS === 'web') {
-        window.location.href = '/login';
-      } else {
-        router.replace('/(auth)/login' as any);
-      }
+      console.error('❌ Logout error:', err);
+      router.replace('/(auth)/login' as any);
     } finally {
       setIsLoading(false);
     }
@@ -195,10 +204,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         user,
         isLoading,
         error,
-        login,
         loginWithDocument,
         logout,
-        clearStorage,
+        clearError,
       }}
     >
       {children}

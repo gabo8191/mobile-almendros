@@ -21,27 +21,9 @@ export type Order = {
     paymentMethod: string;
 };
 
-export interface OrderProduct {
-    id: string;
-    name: string;
-    quantity: number;
-    unitPrice: number;
-    subtotal: number;
-    imageUrl?: string;
-}
-
-export interface OrderDetail extends Order {
-    store: string;
-    paymentMethod: string;
-    products: OrderProduct[];
-    subtotal: number;
-    tax: number;
-    discount?: number;
-    deliveryAddress?: string;
-}
-
+// Para futuras implementaciones de paginación
 export interface OrdersResponse {
-    orders: Order[];
+    data: Order[];
     totalOrders: number;
     totalPages: number;
     currentPage: number;

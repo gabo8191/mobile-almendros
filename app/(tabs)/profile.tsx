@@ -34,9 +34,12 @@ export default function ProfileScreen() {
 
   const performLogout = async () => {
     try {
+      console.log('🚪 Starting logout process...');
       await logout();
+      console.log('✅ Logout completed successfully');
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('❌ Logout failed:', error);
+
       if (Platform.OS === 'web') {
         alert('Error: No se pudo cerrar la sesión correctamente');
       } else {
@@ -101,12 +104,20 @@ export default function ProfileScreen() {
 
           <View style={styles.infoContainer}>
             <ThemedText style={styles.name}>
-              {user?.firstName} {user?.lastName || 'Usuario'}
+              {user?.firstName} {user?.lastName || ''}
             </ThemedText>
             <View style={styles.emailContainer}>
-              <Feather name="mail" size={14} color={colors.textSecondary} style={styles.emailIcon} />
-              <ThemedText style={styles.email}>{user?.email || 'email@example.com'}</ThemedText>
+              <Feather name="user" size={14} color={colors.textSecondary} style={styles.emailIcon} />
+              <ThemedText style={styles.email}>
+                {user?.documentType} {user?.documentNumber}
+              </ThemedText>
             </View>
+            {user?.email && (
+              <View style={styles.emailContainer}>
+                <Feather name="mail" size={14} color={colors.textSecondary} style={styles.emailIcon} />
+                <ThemedText style={styles.email}>{user.email}</ThemedText>
+              </View>
+            )}
           </View>
         </View>
 

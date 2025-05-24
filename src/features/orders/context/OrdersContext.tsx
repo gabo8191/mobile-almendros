@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getOrders, getOrderById, getOrderDetails } from '../api/ordersService';
-import { Order, OrderDetail } from '../types/orders.types';
+import { getOrders, getOrderById } from '../api/ordersService';
+import { Order } from '../types/orders.types';
 import { useAuth } from '../../../shared/context/AuthContext';
 
 type OrdersContextType = {
@@ -10,7 +10,7 @@ type OrdersContextType = {
   error: string | null;
   refreshOrders: () => Promise<void>;
   getOrderById: (id: string) => Promise<Order | null>;
-  getPurchaseDetails: (id: string) => Promise<OrderDetail | null>;
+  clearError: () => void;
 };
 
 const OrdersContext = createContext<OrdersContextType>({
@@ -20,18 +20,23 @@ const OrdersContext = createContext<OrdersContextType>({
   error: null,
   refreshOrders: async () => {},
   getOrderById: async () => null,
-  getPurchaseDetails: async () => null,
+  clearError: () => {},
 });
 
 export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Changed to false initially
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const { user, isLoading: authLoading } = useAuth();
 
-  // Fetch orders when component mounts or user changes, but only if user exists and auth is not loading
+  // Limpiar errores manualmente
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Obtener pedidos cuando el usuario esté autenticado
   useEffect(() => {
     console.log('OrdersProvider useEffect:', { user: !!user, authLoading });
 
@@ -53,16 +58,26 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     try {
-      console.log('Fetching orders for user:', user.id);
+      console.log('Fetching orders for user:', user.documentType, user.documentNumber);
       setIsLoading(true);
       setError(null);
 
       const data = await getOrders();
-      console.log('Orders fetched successfully:', data);
+      console.log('Orders fetched successfully, count:', data.length);
       setOrders(data);
     } catch (err: any) {
-      console.error('Failed to fetch orders', err);
-      setError('No se pudieron cargar los pedidos. Por favor, intente de nuevo.');
+      console.error('Failed to fetch orders:', err);
+
+      let errorMessage = 'No se pudieron cargar los pedidos.';
+      if (err.message === 'Unauthorized') {
+        errorMessage = 'Su sesión ha expirado. Por favor inicie sesión nuevamente.';
+      } else if (err.message.includes('conexión')) {
+        errorMessage = 'Error de conexión. Verifique su red e intente nuevamente.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -80,11 +95,21 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setError(null);
 
       const data = await getOrders();
-      console.log('Orders refreshed successfully:', data);
+      console.log('Orders refreshed successfully, count:', data.length);
       setOrders(data);
     } catch (err: any) {
-      console.error('Failed to refresh orders', err);
-      setError('No se pudieron actualizar los pedidos. Por favor, intente de nuevo.');
+      console.error('Failed to refresh orders:', err);
+
+      let errorMessage = 'No se pudieron actualizar los pedidos.';
+      if (err.message === 'Unauthorized') {
+        errorMessage = 'Su sesión ha expirado. Por favor inicie sesión nuevamente.';
+      } else if (err.message.includes('conexión')) {
+        errorMessage = 'Error de conexión. Verifique su red e intente nuevamente.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsRefreshing(false);
     }
@@ -98,26 +123,24 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     try {
       console.log('Fetching order by id:', id);
-      return await getOrderById(id);
+      const order = await getOrderById(id);
+      console.log('Order fetched successfully:', order.orderNumber);
+      return order;
     } catch (err: any) {
-      console.error('Failed to fetch order', err);
-      setError('No se pudo cargar el pedido. Por favor, intente de nuevo.');
-      return null;
-    }
-  };
+      console.error('Failed to fetch order:', err);
 
-  const fetchPurchaseDetails = async (id: string): Promise<OrderDetail | null> => {
-    if (!user) {
-      console.log('No user, skipping fetch purchase details');
-      return null;
-    }
+      let errorMessage = 'No se pudo cargar el pedido.';
+      if (err.message === 'Unauthorized') {
+        errorMessage = 'Su sesión ha expirado. Por favor inicie sesión nuevamente.';
+      } else if (err.message === 'Pedido no encontrado') {
+        errorMessage = 'El pedido solicitado no fue encontrado.';
+      } else if (err.message.includes('conexión')) {
+        errorMessage = 'Error de conexión. Verifique su red e intente nuevamente.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
 
-    try {
-      console.log('Fetching purchase details for id:', id);
-      return await getOrderDetails(id);
-    } catch (err: any) {
-      console.error('Failed to fetch purchase details', err);
-      setError('No se pudo cargar los detalles de la compra. Por favor, intente de nuevo.');
+      setError(errorMessage);
       return null;
     }
   };
@@ -131,7 +154,7 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         error,
         refreshOrders,
         getOrderById: fetchOrderById,
-        getPurchaseDetails: fetchPurchaseDetails,
+        clearError,
       }}
     >
       {children}
