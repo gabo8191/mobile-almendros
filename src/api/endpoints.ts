@@ -12,16 +12,9 @@ export const ENDPOINTS = {
         GET_PURCHASE_REPORT: (id: string) => `/clients/${id}/purchase-report`,
     },
     PURCHASES: {
-        // Endpoints para clientes
-        GET_ALL: '/mobile/client/orders',
-        GET_BY_ID: (id: string) => `/mobile/client/orders/${id}`,
-        REORDER: (id: string) => `/mobile/client/orders/${id}/reorder`,
-
-        // Endpoints para el historial de compras del cliente actual
-        GET_PURCHASE_HISTORY: '/mobile/client/purchase-history',
-
-        CANCEL_ORDER: (id: string) => `/mobile/client/orders/${id}/cancel`,
-        TRACK_ORDER: (id: string) => `/mobile/client/orders/${id}/track`,
+        // Endpoints para el historial de compras del cliente autenticado
+        GET_ALL: '/mobile/client/purchase-history',
+        GET_BY_ID: (id: string) => `/mobile/client/purchase-history/${id}`,
     },
     SUPPORT: {
         CONTACT: '/support/contact',

@@ -4,43 +4,43 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { colors } from '../../src/constants/Colors';
 import { AppLoader } from '../../src/shared/components/AppLoader';
-import { useOrders } from '../../src/features/orders/context/PurchasesContext';
+import { usePurchases } from '../../src/features/orders/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
-import { Order } from '../../src/features/orders/types/purchases.types';
+import { Purchase } from '../../src/features/orders/types/purchases.types';
 import { typography } from '../../src/constants/Typography';
 import { formatDate, formatCurrency } from '../../src/shared/utils/formatters';
-import { SupportContactCard } from '../../src/features/orders/components/SupportContactCard';
+import { PurchaseInfoCard } from '../../src/features/orders/components/PurchaseInfoCard';
 
-export default function OrderDetailScreen() {
+export default function PurchaseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getOrderById } = useOrders();
-  const [order, setOrder] = useState<Order | null>(null);
+  const { getPurchaseById } = usePurchases();
+  const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
-      fetchOrderDetails();
+      fetchPurchaseDetails();
     }
   }, [id]);
 
-  const fetchOrderDetails = async () => {
+  const fetchPurchaseDetails = async () => {
     if (!id) return;
 
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Cargando detalles de la compra ID:', id);
+      console.log('Cargando detalles de compra para ID:', id);
 
-      const orderData = await getOrderById(id);
-      if (orderData) {
-        setOrder(orderData);
-        console.log('Detalles de compra cargados:', orderData.orderNumber);
+      const purchaseData = await getPurchaseById(id);
+      if (purchaseData) {
+        setPurchase(purchaseData);
+        console.log('Detalles de compra cargados:', purchaseData.purchaseNumber);
       } else {
         setError('No se encontró la compra solicitada');
       }
     } catch (err: any) {
-      console.error('Error cargando detalles de compra:', err);
+      console.error('Error al cargar detalles de compra:', err);
       setError(err.message || 'Error al cargar los detalles de la compra');
     } finally {
       setIsLoading(false);
@@ -63,7 +63,7 @@ export default function OrderDetailScreen() {
     );
   }
 
-  if (error || !order) {
+  if (error || !purchase) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
@@ -72,7 +72,7 @@ export default function OrderDetailScreen() {
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
             <Feather name="arrow-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Detalles de Compra</ThemedText>
+          <ThemedText style={styles.headerTitle}>Detalles de la Compra</ThemedText>
           <View style={styles.placeholder} />
         </View>
 
@@ -81,7 +81,7 @@ export default function OrderDetailScreen() {
             <Feather name="alert-circle" size={56} color={colors.error} />
             <ThemedText style={styles.errorTitle}>Error al cargar</ThemedText>
             <ThemedText style={styles.errorMessage}>{error || 'No se pudo encontrar la compra solicitada'}</ThemedText>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchOrderDetails} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchPurchaseDetails} activeOpacity={0.7}>
               <ThemedText style={styles.retryButtonText}>Intentar nuevamente</ThemedText>
             </TouchableOpacity>
           </View>
@@ -99,25 +99,32 @@ export default function OrderDetailScreen() {
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
           <Feather name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Detalles de Compra</ThemedText>
+        <ThemedText style={styles.headerTitle}>Detalles de la Compra</ThemedText>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Información principal de la compra */}
-        <View style={styles.orderHeader}>
-          <View style={styles.orderTitleRow}>
-            <ThemedText style={styles.orderNumber}>Compra #{order.orderNumber}</ThemedText>
+        <View style={styles.purchaseHeader}>
+          <View style={styles.purchaseTitleRow}>
+            <ThemedText style={styles.purchaseNumber}>#{purchase.purchaseNumber}</ThemedText>
+            <View style={styles.statusBadge}>
+              <Feather name="check-circle" size={16} color={colors.success} />
+              <ThemedText style={styles.statusText}>Completado</ThemedText>
+            </View>
           </View>
-          <ThemedText style={styles.orderDate}>Fecha: {formatDate(order.date)}</ThemedText>
+          <ThemedText style={styles.purchaseDate}>{formatDate(purchase.date)}</ThemedText>
         </View>
 
-        {/* Productos comprados */}
+        {/* Información de la compra */}
+        <PurchaseInfoCard date={purchase.date} paymentMethod={purchase.paymentMethod} />
+
+        {/* Items de la compra */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Productos Comprados</ThemedText>
           <View style={styles.itemsContainer}>
-            {order.items.map((item, index) => (
-              <View key={item.id} style={[styles.orderItem, index === order.items.length - 1 && styles.lastItem]}>
+            {purchase.items.map((item, index) => (
+              <View key={item.id} style={[styles.purchaseItem, index === purchase.items.length - 1 && styles.lastItem]}>
                 <View style={styles.itemInfo}>
                   <ThemedText style={styles.itemName}>{item.name}</ThemedText>
                   <ThemedText style={styles.itemDetails}>
@@ -130,41 +137,29 @@ export default function OrderDetailScreen() {
           </View>
         </View>
 
-        {/* Resumen de pago */}
+        {/* Resumen de costos */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Resumen de Pago</ThemedText>
           <View style={styles.costSummary}>
             <View style={styles.costRow}>
               <ThemedText style={styles.costLabel}>Subtotal</ThemedText>
-              <ThemedText style={styles.costValue}>{formatCurrency(order.subtotal)}</ThemedText>
+              <ThemedText style={styles.costValue}>{formatCurrency(purchase.subtotal)}</ThemedText>
             </View>
 
-            {order.tax > 0 && (
+            {purchase.tax > 0 && (
               <View style={styles.costRow}>
-                <ThemedText style={styles.costLabel}>IVA</ThemedText>
-                <ThemedText style={styles.costValue}>{formatCurrency(order.tax)}</ThemedText>
+                <ThemedText style={styles.costLabel}>Impuestos</ThemedText>
+                <ThemedText style={styles.costValue}>{formatCurrency(purchase.tax)}</ThemedText>
               </View>
             )}
 
             <View style={styles.divider} />
             <View style={styles.costRow}>
-              <ThemedText style={styles.totalLabel}>Total Pagado</ThemedText>
-              <ThemedText style={styles.totalValue}>{formatCurrency(order.total)}</ThemedText>
+              <ThemedText style={styles.totalLabel}>Total</ThemedText>
+              <ThemedText style={styles.totalValue}>{formatCurrency(purchase.total)}</ThemedText>
             </View>
           </View>
         </View>
-
-        {/* Información de pago */}
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Método de Pago</ThemedText>
-          <View style={styles.paymentInfo}>
-            <Feather name="credit-card" size={20} color={colors.primary} style={styles.paymentIcon} />
-            <ThemedText style={styles.paymentMethod}>{order.paymentMethod}</ThemedText>
-          </View>
-        </View>
-
-        {/* Contacto de soporte */}
-        <SupportContactCard orderNumber={order.orderNumber} />
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
@@ -251,23 +246,37 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  orderHeader: {
+  purchaseHeader: {
     backgroundColor: colors.surface,
     padding: 20,
     marginBottom: 16,
   },
-  orderTitleRow: {
+  purchaseTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  orderNumber: {
+  purchaseNumber: {
     fontFamily: typography.fontFamily.sansBold,
     fontSize: typography.sizes.h2,
     color: colors.primary,
   },
-  orderDate: {
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${colors.success}15`,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  statusText: {
+    fontFamily: typography.fontFamily.sansBold,
+    fontSize: typography.sizes.small,
+    color: colors.success,
+    marginLeft: 4,
+  },
+  purchaseDate: {
     fontFamily: typography.fontFamily.sans,
     fontSize: typography.sizes.body,
     color: colors.textSecondary,
@@ -293,7 +302,7 @@ const styles = StyleSheet.create({
   itemsContainer: {
     gap: 0,
   },
-  orderItem: {
+  purchaseItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -357,21 +366,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.sansBold,
     fontSize: typography.sizes.h4,
     color: colors.primary,
-  },
-  paymentInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 8,
-  },
-  paymentIcon: {
-    marginRight: 12,
-  },
-  paymentMethod: {
-    fontFamily: typography.fontFamily.sans,
-    fontSize: typography.sizes.body,
-    color: colors.text,
   },
   bottomSpacing: {
     height: 100,

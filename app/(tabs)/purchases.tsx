@@ -5,13 +5,13 @@ import { colors } from '../../src/constants/Colors';
 import { AppLoader } from '../../src/shared/components/AppLoader';
 import { PurchaseCard } from '../../src/features/orders/components/PurchaseCard';
 import { EmptyState } from '../../src/shared/components/ui/EmptyState';
-import { useOrders } from '../../src/features/orders/context/PurchasesContext';
+import { usePurchases } from '../../src/features/orders/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
 import { Purchase } from '../../src/features/orders/types/purchases.types';
 import { typography } from '../../src/constants/Typography';
 
-export default function OrdersScreen() {
-  const { orders, isLoading, isRefreshing, refreshOrders, error } = useOrders();
+export default function PurchasesScreen() {
+  const { purchases, isLoading, isRefreshing, refreshPurchases, error } = usePurchases();
 
   const renderItem = useCallback(({ item }: { item: Purchase }) => {
     return <PurchaseCard purchase={item} />;
@@ -30,8 +30,8 @@ export default function OrdersScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Historial de Compras</ThemedText>
-        <ThemedText style={styles.subtitle}>Revisa todas tus compras realizadas</ThemedText>
+        <ThemedText style={styles.title}>Mis Compras</ThemedText>
+        <ThemedText style={styles.subtitle}>Historial de todas tus compras realizadas</ThemedText>
       </View>
 
       {error && (
@@ -46,12 +46,12 @@ export default function OrdersScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        contentContainerStyle={orders.length === 0 ? styles.emptyContent : styles.listContent}
+        contentContainerStyle={purchases.length === 0 ? styles.emptyContent : styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
-            onRefresh={refreshOrders}
+            onRefresh={refreshPurchases}
             tintColor={colors.primary}
             colors={[colors.primary]}
           />
