@@ -6,27 +6,17 @@ import { typography } from '@/src/constants/Typography';
 import { Feather } from '@expo/vector-icons';
 import { formatDate } from '@/src/shared/utils/formatters';
 
-type DeliveryInfoCardProps = {
-  address: string;
+type PurchaseInfoCardProps = {
   date: string;
+  paymentMethod: string;
   store?: string;
 };
 
-export function DeliveryInfoCard({ address, date, store }: DeliveryInfoCardProps) {
+export function PurchaseInfoCard({ date, paymentMethod, store }: PurchaseInfoCardProps) {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <ThemedText style={styles.title}>Información de Entrega</ThemedText>
-      </View>
-
-      <View style={styles.contentRow}>
-        <View style={styles.iconContainer}>
-          <Feather name="map-pin" size={20} color={colors.primary} />
-        </View>
-        <View style={styles.infoContainer}>
-          <ThemedText style={styles.label}>Dirección de Entrega</ThemedText>
-          <ThemedText style={styles.value}>{address}</ThemedText>
-        </View>
+        <ThemedText style={styles.title}>Información de la Compra</ThemedText>
       </View>
 
       <View style={styles.contentRow}>
@@ -34,8 +24,18 @@ export function DeliveryInfoCard({ address, date, store }: DeliveryInfoCardProps
           <Feather name="calendar" size={20} color={colors.primary} />
         </View>
         <View style={styles.infoContainer}>
-          <ThemedText style={styles.label}>Fecha de Pedido</ThemedText>
+          <ThemedText style={styles.label}>Fecha de Compra</ThemedText>
           <ThemedText style={styles.value}>{formatDate(date)}</ThemedText>
+        </View>
+      </View>
+
+      <View style={styles.contentRow}>
+        <View style={styles.iconContainer}>
+          <Feather name="credit-card" size={20} color={colors.primary} />
+        </View>
+        <View style={styles.infoContainer}>
+          <ThemedText style={styles.label}>Método de Pago</ThemedText>
+          <ThemedText style={styles.value}>{paymentMethod}</ThemedText>
         </View>
       </View>
 

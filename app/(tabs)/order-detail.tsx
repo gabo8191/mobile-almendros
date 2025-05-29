@@ -4,14 +4,11 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { colors } from '../../src/constants/Colors';
 import { AppLoader } from '../../src/shared/components/AppLoader';
-import { useOrders } from '../../src/features/orders/context/OrdersContext';
+import { useOrders } from '../../src/features/orders/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
-import { Order } from '../../src/features/orders/types/orders.types';
+import { Order } from '../../src/features/orders/types/purchases.types';
 import { typography } from '../../src/constants/Typography';
 import { formatDate, formatCurrency } from '../../src/shared/utils/formatters';
-import { OrderStatusBadge } from '../../src/features/orders/components/OrderStatusBadge';
-import { PurchaseStatusTracker } from '../../src/features/orders/components/PurchaseStatusTracker';
-import { DeliveryInfoCard } from '../../src/features/orders/components/DeliveryInfoCard';
 import { SupportContactCard } from '../../src/features/orders/components/SupportContactCard';
 
 export default function OrderDetailScreen() {
@@ -33,18 +30,18 @@ export default function OrderDetailScreen() {
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Fetching order details for ID:', id);
+      console.log('Cargando detalles de la compra ID:', id);
 
       const orderData = await getOrderById(id);
       if (orderData) {
         setOrder(orderData);
-        console.log('Order details loaded:', orderData.orderNumber);
+        console.log('Detalles de compra cargados:', orderData.orderNumber);
       } else {
-        setError('No se encontró el pedido solicitado');
+        setError('No se encontró la compra solicitada');
       }
     } catch (err: any) {
-      console.error('Error fetching order details:', err);
-      setError(err.message || 'Error al cargar los detalles del pedido');
+      console.error('Error cargando detalles de compra:', err);
+      setError(err.message || 'Error al cargar los detalles de la compra');
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +57,7 @@ export default function OrderDetailScreen() {
         <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
         <View style={styles.loadingContainer}>
           <AppLoader size="large" color={colors.primary} />
-          <ThemedText style={styles.loadingText}>Cargando detalles del pedido...</ThemedText>
+          <ThemedText style={styles.loadingText}>Cargando detalles de la compra...</ThemedText>
         </View>
       </SafeAreaView>
     );
@@ -75,7 +72,7 @@ export default function OrderDetailScreen() {
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
             <Feather name="arrow-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Detalles del Pedido</ThemedText>
+          <ThemedText style={styles.headerTitle}>Detalles de Compra</ThemedText>
           <View style={styles.placeholder} />
         </View>
 
@@ -83,7 +80,7 @@ export default function OrderDetailScreen() {
           <View style={styles.errorContent}>
             <Feather name="alert-circle" size={56} color={colors.error} />
             <ThemedText style={styles.errorTitle}>Error al cargar</ThemedText>
-            <ThemedText style={styles.errorMessage}>{error || 'No se pudo encontrar el pedido solicitado'}</ThemedText>
+            <ThemedText style={styles.errorMessage}>{error || 'No se pudo encontrar la compra solicitada'}</ThemedText>
             <TouchableOpacity style={styles.retryButton} onPress={fetchOrderDetails} activeOpacity={0.7}>
               <ThemedText style={styles.retryButtonText}>Intentar nuevamente</ThemedText>
             </TouchableOpacity>
@@ -102,35 +99,25 @@ export default function OrderDetailScreen() {
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
           <Feather name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Detalles del Pedido</ThemedText>
+        <ThemedText style={styles.headerTitle}>Detalles de Compra</ThemedText>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Información principal del pedido */}
+        {/* Información principal de la compra */}
         <View style={styles.orderHeader}>
           <View style={styles.orderTitleRow}>
-            <ThemedText style={styles.orderNumber}>#{order.orderNumber}</ThemedText>
-            <OrderStatusBadge status={order.status} size="large" />
+            <ThemedText style={styles.orderNumber}>Compra #{order.orderNumber}</ThemedText>
           </View>
-          <ThemedText style={styles.orderDate}>{formatDate(order.date)}</ThemedText>
+          <ThemedText style={styles.orderDate}>Fecha: {formatDate(order.date)}</ThemedText>
         </View>
 
-        {/* Tracker de estado */}
+        {/* Productos comprados */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Estado del Pedido</ThemedText>
-          <PurchaseStatusTracker currentStatus={order.status} />
-        </View>
-
-        {/* Información de entrega */}
-        <DeliveryInfoCard address={order.address} date={order.date} />
-
-        {/* Items del pedido */}
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Productos Pedidos</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Productos Comprados</ThemedText>
           <View style={styles.itemsContainer}>
             {order.items.map((item, index) => (
-              <View key={item.id} style={styles.orderItem}>
+              <View key={item.id} style={[styles.orderItem, index === order.items.length - 1 && styles.lastItem]}>
                 <View style={styles.itemInfo}>
                   <ThemedText style={styles.itemName}>{item.name}</ThemedText>
                   <ThemedText style={styles.itemDetails}>
@@ -143,7 +130,7 @@ export default function OrderDetailScreen() {
           </View>
         </View>
 
-        {/* Resumen de costos */}
+        {/* Resumen de pago */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Resumen de Pago</ThemedText>
           <View style={styles.costSummary}>
@@ -154,21 +141,14 @@ export default function OrderDetailScreen() {
 
             {order.tax > 0 && (
               <View style={styles.costRow}>
-                <ThemedText style={styles.costLabel}>Impuestos</ThemedText>
+                <ThemedText style={styles.costLabel}>IVA</ThemedText>
                 <ThemedText style={styles.costValue}>{formatCurrency(order.tax)}</ThemedText>
-              </View>
-            )}
-
-            {order.shipping > 0 && (
-              <View style={styles.costRow}>
-                <ThemedText style={styles.costLabel}>Envío</ThemedText>
-                <ThemedText style={styles.costValue}>{formatCurrency(order.shipping)}</ThemedText>
               </View>
             )}
 
             <View style={styles.divider} />
             <View style={styles.costRow}>
-              <ThemedText style={styles.totalLabel}>Total</ThemedText>
+              <ThemedText style={styles.totalLabel}>Total Pagado</ThemedText>
               <ThemedText style={styles.totalValue}>{formatCurrency(order.total)}</ThemedText>
             </View>
           </View>
@@ -311,7 +291,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   itemsContainer: {
-    gap: 12,
+    gap: 0,
   },
   orderItem: {
     flexDirection: 'row',
@@ -320,6 +300,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
+  },
+  lastItem: {
+    borderBottomWidth: 0,
   },
   itemInfo: {
     flex: 1,

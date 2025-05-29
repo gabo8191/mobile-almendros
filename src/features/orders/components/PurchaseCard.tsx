@@ -2,31 +2,33 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedText } from '../../../shared/components/ThemedText';
-import { Order } from '../types/orders.types';
+import { Purchase } from '../types/purchases.types';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../../../constants/Colors';
 import { formatDate, formatCurrency } from '../../../shared/utils/formatters';
-import { OrderStatusBadge } from './OrderStatusBadge';
 import { typography } from '../../../constants/Typography';
 
-type OrderCardProps = {
-  order: Order;
+type PurchaseCardProps = {
+  purchase: Purchase;
 };
 
-export function OrderCard({ order }: OrderCardProps) {
+export function PurchaseCard({ purchase }: PurchaseCardProps) {
   const handlePress = () => {
     // Navegar a la nueva ruta de detalle
-    router.push(`/(tabs)/order-detail?id=${order.id}` as any);
+    router.push(`/(tabs)/purchase-detail?id=${purchase.id}` as any);
   };
 
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <View style={styles.orderInfo}>
-          <ThemedText style={styles.orderNumber}>#{order.orderNumber}</ThemedText>
-          <ThemedText style={styles.orderDate}>{formatDate(order.date)}</ThemedText>
+        <View style={styles.purchaseInfo}>
+          <ThemedText style={styles.purchaseNumber}>#{purchase.purchaseNumber}</ThemedText>
+          <ThemedText style={styles.purchaseDate}>{formatDate(purchase.date)}</ThemedText>
         </View>
-        <OrderStatusBadge status={order.status} size="medium" />
+        <View style={styles.badge}>
+          <Feather name="check-circle" size={16} color={colors.success} />
+          <ThemedText style={styles.badgeText}>Completado</ThemedText>
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -36,16 +38,16 @@ export function OrderCard({ order }: OrderCardProps) {
               <Feather name="package" size={16} color={colors.textSecondary} style={styles.infoIcon} />
               <ThemedText style={styles.infoLabel}>Productos:</ThemedText>
             </View>
-            <ThemedText style={styles.infoValue}>{order.items.length}</ThemedText>
+            <ThemedText style={styles.infoValue}>{purchase.items.length}</ThemedText>
           </View>
 
           <View style={styles.infoItem}>
             <View style={styles.infoRow}>
-              <Feather name="map-pin" size={16} color={colors.textSecondary} style={styles.infoIcon} />
-              <ThemedText style={styles.infoLabel}>Dirección:</ThemedText>
+              <Feather name="credit-card" size={16} color={colors.textSecondary} style={styles.infoIcon} />
+              <ThemedText style={styles.infoLabel}>Método de pago:</ThemedText>
             </View>
             <ThemedText style={styles.infoValue} numberOfLines={2}>
-              {order.address}
+              {purchase.paymentMethod}
             </ThemedText>
           </View>
         </View>
@@ -54,8 +56,8 @@ export function OrderCard({ order }: OrderCardProps) {
 
         <View style={styles.totalSection}>
           <View style={styles.totalRow}>
-            <ThemedText style={styles.totalLabel}>Total del pedido</ThemedText>
-            <ThemedText style={styles.totalValue}>{formatCurrency(order.total)}</ThemedText>
+            <ThemedText style={styles.totalLabel}>Total de la compra</ThemedText>
+            <ThemedText style={styles.totalValue}>{formatCurrency(purchase.total)}</ThemedText>
           </View>
         </View>
       </View>
@@ -92,19 +94,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
-  orderInfo: {
+  purchaseInfo: {
     flex: 1,
   },
-  orderNumber: {
+  purchaseNumber: {
     fontSize: typography.sizes.h4,
     fontFamily: typography.fontFamily.sansBold,
     color: colors.primary,
     marginBottom: 4,
   },
-  orderDate: {
+  purchaseDate: {
     fontSize: typography.sizes.caption,
     fontFamily: typography.fontFamily.sans,
     color: colors.textSecondary,
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${colors.success}15`,
+    borderColor: colors.success,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  badgeText: {
+    fontFamily: typography.fontFamily.sansBold,
+    color: colors.success,
+    fontSize: typography.sizes.caption,
+    marginLeft: 4,
   },
   content: {
     padding: 20,

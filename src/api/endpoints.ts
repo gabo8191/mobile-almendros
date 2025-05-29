@@ -11,7 +11,7 @@ export const ENDPOINTS = {
         GET_PURCHASE_HISTORY: (id: string) => `/clients/${id}/purchase-history`,
         GET_PURCHASE_REPORT: (id: string) => `/clients/${id}/purchase-report`,
     },
-    ORDERS: {
+    PURCHASES: {
         // Endpoints para clientes
         GET_ALL: '/mobile/client/orders',
         GET_BY_ID: (id: string) => `/mobile/client/orders/${id}`,
