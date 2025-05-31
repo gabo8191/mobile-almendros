@@ -16,6 +16,13 @@ export const ENDPOINTS = {
         GET_ALL: '/mobile/client/purchase-history',
         GET_BY_ID: (id: string) => `/mobile/client/purchase-history/${id}`,
     },
+    MOBILE: {
+        // Endpoints específicos para la app móvil
+        GET_ORDERS: '/mobile/client/orders',
+        GET_ORDER_BY_ID: (id: string) => `/mobile/client/orders/${id}`,
+        GET_PURCHASE_HISTORY: '/mobile/client/purchase-history',
+        GET_PURCHASE_BY_ID: (id: string) => `/mobile/client/purchase-history/${id}`,
+    },
     SUPPORT: {
         CONTACT: '/support/contact',
         FAQ: '/support/faq',
