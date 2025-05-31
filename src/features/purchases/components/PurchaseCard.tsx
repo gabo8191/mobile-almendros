@@ -12,11 +12,27 @@ type PurchaseCardProps = {
   purchase: Purchase;
 };
 
+// Helper function para obtener el icono y color del status
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'completed':
+      return { icon: 'check-circle' as const, color: colors.success, text: 'Completado' };
+    case 'pending':
+      return { icon: 'clock' as const, color: colors.warning, text: 'Pendiente' };
+    case 'cancelled':
+      return { icon: 'x-circle' as const, color: colors.error, text: 'Cancelado' };
+    default:
+      return { icon: 'check-circle' as const, color: colors.success, text: 'Completado' };
+  }
+};
+
 export function PurchaseCard({ purchase }: PurchaseCardProps) {
   const handlePress = () => {
     // Navegar a la nueva ruta de detalle
     router.push(`/(tabs)/purchase-detail?id=${purchase.id}` as any);
   };
+
+  const statusDisplay = getStatusDisplay(purchase.status);
 
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
@@ -25,9 +41,9 @@ export function PurchaseCard({ purchase }: PurchaseCardProps) {
           <ThemedText style={styles.purchaseNumber}>#{purchase.purchaseNumber}</ThemedText>
           <ThemedText style={styles.purchaseDate}>{formatDate(purchase.date)}</ThemedText>
         </View>
-        <View style={styles.badge}>
-          <Feather name="check-circle" size={16} color={colors.success} />
-          <ThemedText style={styles.badgeText}>Completado</ThemedText>
+        <View style={[styles.badge, { backgroundColor: `${statusDisplay.color}15`, borderColor: statusDisplay.color }]}>
+          <Feather name={statusDisplay.icon} size={16} color={statusDisplay.color} />
+          <ThemedText style={[styles.badgeText, { color: statusDisplay.color }]}>{statusDisplay.text}</ThemedText>
         </View>
       </View>
 
@@ -111,8 +127,6 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${colors.success}15`,
-    borderColor: colors.success,
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 10,
@@ -120,7 +134,6 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontFamily: typography.fontFamily.sansBold,
-    color: colors.success,
     fontSize: typography.sizes.caption,
     marginLeft: 4,
   },

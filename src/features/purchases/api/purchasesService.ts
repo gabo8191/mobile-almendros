@@ -1,6 +1,25 @@
 import api from '../../../api/axios';
 import { ENDPOINTS } from '../../../api/endpoints';
-import { Purchase } from '../types/purchases.types';
+import { Purchase, PurchaseDetail } from '../types/purchases.types';
+
+/**
+ * Mapea los datos del backend (MobileOrder) al formato esperado por el frontend (Purchase)
+ */
+function mapBackendToPurchase(backendData: any): Purchase {
+    return {
+        id: backendData.id,
+        purchaseNumber: backendData.orderNumber, // Mapeo: orderNumber -> purchaseNumber
+        date: backendData.date,
+        status: backendData.status || 'completed',
+        items: backendData.items || [],
+        subtotal: backendData.subtotal || 0,
+        tax: backendData.tax || 0,
+        shipping: backendData.shipping || 0,
+        total: backendData.total,
+        address: backendData.address || '',
+        paymentMethod: backendData.paymentMethod || 'Cash',
+    };
+}
 
 /**
  * Obtiene todas las compras del cliente autenticado
@@ -8,9 +27,12 @@ import { Purchase } from '../types/purchases.types';
 export const getPurchases = async (): Promise<Purchase[]> => {
     try {
         console.log('Obteniendo compras desde:', ENDPOINTS.PURCHASES.GET_ALL);
-        const response = await api.get<{ data: Purchase[] }>(ENDPOINTS.PURCHASES.GET_ALL);
+        const response = await api.get<{ data: any[] }>(ENDPOINTS.PURCHASES.GET_ALL);
         console.log('Respuesta de compras exitosa, cantidad:', response.data.data?.length || 0);
-        return response.data.data || [];
+
+        // Mapear los datos del backend al formato del frontend
+        const purchases = (response.data.data || []).map(mapBackendToPurchase);
+        return purchases;
     } catch (error: any) {
         console.error('Error al obtener compras:', error);
         console.error('Detalles del error:', {
@@ -35,7 +57,7 @@ export const getPurchases = async (): Promise<Purchase[]> => {
 /**
  * Obtiene una compra específica por su ID
  */
-export const getPurchaseById = async (id: string): Promise<Purchase> => {
+export const getPurchaseById = async (id: string): Promise<PurchaseDetail> => {
     try {
         console.log('Obteniendo compra por id:', id);
         const response = await api.get(ENDPOINTS.PURCHASES.GET_BY_ID(id));
@@ -43,27 +65,19 @@ export const getPurchaseById = async (id: string): Promise<Purchase> => {
         console.log('Datos de la respuesta:', JSON.stringify(response.data, null, 2));
 
         // Intentar diferentes estructuras de respuesta que el backend podría estar enviando
-        let purchaseData: Purchase | null = null;
+        let purchaseData: any | null = null;
 
-        if (response.data?.client) {
-            console.log('Usando estructura response.data.client');
-            purchaseData = response.data.client;
-        }
-        else if (response.data?.data) {
+        if (response.data?.data) {
             console.log('Usando estructura response.data.data');
             purchaseData = response.data.data;
         }
-        else if (response.data?.id || response.data?.purchaseNumber) {
+        else if (response.data?.id || response.data?.orderNumber) {
             console.log('Usando estructura directa response.data');
             purchaseData = response.data;
         }
         else if (Array.isArray(response.data) && response.data.length > 0) {
             console.log('Usando estructura de array response.data[0]');
             purchaseData = response.data[0];
-        }
-        else if (response.data?.purchases && Array.isArray(response.data.purchases) && response.data.purchases.length > 0) {
-            console.log('Usando estructura response.data.purchases[0]');
-            purchaseData = response.data.purchases[0];
         }
 
         if (!purchaseData) {
@@ -72,18 +86,24 @@ export const getPurchaseById = async (id: string): Promise<Purchase> => {
         }
 
         // Validar que tenemos los campos esenciales
-        if (!purchaseData.id && !purchaseData.purchaseNumber) {
+        if (!purchaseData.id && !purchaseData.orderNumber) {
             console.error('Datos de compra sin campos esenciales:', purchaseData);
             throw new Error('Datos de la compra incompletos');
         }
 
         console.log('Datos de compra extraídos exitosamente:', {
             id: purchaseData.id,
-            purchaseNumber: purchaseData.purchaseNumber,
+            orderNumber: purchaseData.orderNumber,
             total: purchaseData.total
         });
 
-        return purchaseData;
+        // Mapear y devolver como PurchaseDetail
+        const mappedPurchase = mapBackendToPurchase(purchaseData);
+        return {
+            ...mappedPurchase,
+            store: purchaseData.store || 'Almendros',
+            discount: purchaseData.discount || 0,
+        } as PurchaseDetail;
 
     } catch (error: any) {
         console.error('Error al obtener compra por ID:', error);

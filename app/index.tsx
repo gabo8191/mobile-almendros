@@ -11,8 +11,8 @@ export default function IndexScreen() {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        // Usuario autenticado, redirigir a pedidos
-        router.replace('/(tabs)/orders');
+        // Usuario autenticado, redirigir a compras (historial de compras)
+        router.replace('/(tabs)/purchases');
       } else {
         // Usuario no autenticado, redirigir a login
         router.replace('/(auth)/login');
