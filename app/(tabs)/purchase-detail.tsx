@@ -4,12 +4,12 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { colors } from '../../src/constants/Colors';
 import { AppLoader } from '../../src/shared/components/AppLoader';
-import { usePurchases } from '../../src/features/orders/context/PurchasesContext';
+import { usePurchases } from '../../src/features/purchases/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
-import { Purchase } from '../../src/features/orders/types/purchases.types';
+import { Purchase } from '../../src/features/purchases/types/purchases.types';
 import { typography } from '../../src/constants/Typography';
 import { formatDate, formatCurrency } from '../../src/shared/utils/formatters';
-import { PurchaseInfoCard } from '../../src/features/orders/components/PurchaseInfoCard';
+import { PurchaseInfoCard } from '../../src/features/purchases/components/PurchaseInfoCard';
 
 export default function PurchaseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

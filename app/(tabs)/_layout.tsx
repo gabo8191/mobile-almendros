@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Platform, View, StyleSheet } from 'react-native';
 import { colors } from '../../src/constants/Colors';
 import { TabBarBackground } from '../../src/shared/components/ui/TabBarBackground';
-import { PurchasesProvider } from '../../src/features/orders/context/PurchasesContext';
+import { PurchasesProvider } from '../../src/features/purchases/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
 import { typography } from '../../src/constants/Typography';
 

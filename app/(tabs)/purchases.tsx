@@ -3,11 +3,11 @@ import { View, StyleSheet, RefreshControl, SafeAreaView, Platform, FlatList, Sta
 import { ThemedText } from '../../src/shared/components/ThemedText';
 import { colors } from '../../src/constants/Colors';
 import { AppLoader } from '../../src/shared/components/AppLoader';
-import { PurchaseCard } from '../../src/features/orders/components/PurchaseCard';
+import { PurchaseCard } from '../../src/features/purchases/components/PurchaseCard';
 import { EmptyState } from '../../src/shared/components/ui/EmptyState';
-import { usePurchases } from '../../src/features/orders/context/PurchasesContext';
+import { usePurchases } from '../../src/features/purchases/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
-import { Purchase } from '../../src/features/orders/types/purchases.types';
+import { Purchase } from '../../src/features/purchases/types/purchases.types';
 import { typography } from '../../src/constants/Typography';
 
 export default function PurchasesScreen() {
