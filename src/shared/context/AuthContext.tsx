@@ -137,8 +137,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('🔄 Redirecting to login - no user');
       router.replace('/(auth)/login' as any);
     } else if (user && inAuthGroup) {
-      console.log('🔄 Redirecting to orders - user authenticated');
-      router.replace('/(tabs)/orders' as any);
+      console.log('🔄 Redirecting to purchases - user authenticated');
+      router.replace('/(tabs)/purchases' as any);
     }
   }, [user, isInitialized, segments]);
 
@@ -172,8 +172,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await saveItem('app_storage_initialized', 'true');
       }
 
-      console.log('✅ Login successful, redirecting to orders');
-      router.replace('/(tabs)/orders' as any);
+      console.log('✅ Login successful, redirecting to purchases');
+      router.replace('/(tabs)/purchases' as any);
     } catch (err: any) {
       let errorMessage = 'Error durante el inicio de sesión';
 

@@ -11,17 +11,17 @@ export const ENDPOINTS = {
         GET_PURCHASE_HISTORY: (id: string) => `/clients/${id}/purchase-history`,
         GET_PURCHASE_REPORT: (id: string) => `/clients/${id}/purchase-report`,
     },
-    ORDERS: {
-        // Endpoints para clientes
-        GET_ALL: '/mobile/client/orders',
-        GET_BY_ID: (id: string) => `/mobile/client/orders/${id}`,
-        REORDER: (id: string) => `/mobile/client/orders/${id}/reorder`,
-
-        // Endpoints para el historial de compras del cliente actual
+    PURCHASES: {
+        // Endpoints para el historial de compras del cliente autenticado
+        GET_ALL: '/mobile/client/purchase-history',
+        GET_BY_ID: (id: string) => `/mobile/client/purchase-history/${id}`,
+    },
+    MOBILE: {
+        // Endpoints específicos para la app móvil
+        GET_ORDERS: '/mobile/client/orders',
+        GET_ORDER_BY_ID: (id: string) => `/mobile/client/orders/${id}`,
         GET_PURCHASE_HISTORY: '/mobile/client/purchase-history',
-
-        CANCEL_ORDER: (id: string) => `/mobile/client/orders/${id}/cancel`,
-        TRACK_ORDER: (id: string) => `/mobile/client/orders/${id}/track`,
+        GET_PURCHASE_BY_ID: (id: string) => `/mobile/client/purchase-history/${id}`,
     },
     SUPPORT: {
         CONTACT: '/support/contact',
