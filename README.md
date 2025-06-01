@@ -25,11 +25,13 @@ Esta aplicación móvil permite a los clientes:
 ## ✅ Requisitos Previos
 
 ### Obligatorios
+
 - **Node.js** >= 22.15.0 (versión exacta especificada en `.node-version`)
 - **npm** o **yarn**
 - **Expo CLI**: `npm install -g expo-cli`
 
 ### Para desarrollo móvil
+
 - **Android Studio** (para emulador Android)
 - **Xcode** (para simulador iOS - solo en macOS)
 - **Expo Go app** (para testing en dispositivos físicos)
@@ -66,6 +68,7 @@ yarn install
 El proyecto incluye configuraciones para diferentes entornos en `src/config/`:
 
 **Desarrollo** (`src/config/development.json`): (La que usaremos en este caso puntual)
+
 ```json
 {
   "api": {
@@ -76,6 +79,7 @@ El proyecto incluye configuraciones para diferentes entornos en `src/config/`:
 ```
 
 **Producción** (`src/config/production.json`): (De momento no habilitada)
+
 ```json
 {
   "api": {
@@ -90,6 +94,7 @@ El proyecto incluye configuraciones para diferentes entornos en `src/config/`:
 **IMPORTANTE**: Debes actualizar la IP en `development.json` con la IP de tu máquina local:
 
 1. **Obtén tu IP local**:
+
    ```bash
    # En Windows
    ipconfig
@@ -117,7 +122,7 @@ Puedes crear un archivo `.env` para configuraciones adicionales:
 ```bash
 # .env
 EXPO_PUBLIC_ENV=development
-EXPO_PUBLIC_DEV_FORCE_LOGIN=false
+EXPO_PUBLIC_DEV_FORCE_LOGIN=true
 ```
 
 ## 🎮 Ejecución de la Aplicación
@@ -138,6 +143,7 @@ npm run start:dev
 ### Plataformas específicas
 
 #### 📱 Android
+
 ```bash
 # Modo normal
 npm run android
@@ -150,6 +156,7 @@ npm run android:dev-fresh
 ```
 
 #### 🍎 iOS (solo en macOS)
+
 ```bash
 # Modo normal
 npm run ios
@@ -162,6 +169,7 @@ npm run ios:dev-fresh
 ```
 
 #### 🌐 Web
+
 ```bash
 # Modo normal
 npm run web
@@ -180,17 +188,17 @@ npm run web:dev-fresh
 
 ## 🔄 Scripts Disponibles
 
-| Script | Descripción |
-|--------|-------------|
-| `npm start` | Inicia servidor de desarrollo |
-| `npm run start:dev` | Desarrollo con variables de entorno |
-| `npm run start:dev-fresh` | Desarrollo forzando nuevo login |
-| `npm run android` | Ejecuta en Android |
-| `npm run ios` | Ejecuta en iOS |
-| `npm run web` | Ejecuta en navegador |
-| `npm run lint` | Ejecuta linter ESLint |
-| `npm run cache:clear` | Limpia caché de Expo |
-| `npm run prebuild` | Genera código nativo |
+| Script                    | Descripción                         |
+| ------------------------- | ----------------------------------- |
+| `npm start`               | Inicia servidor de desarrollo       |
+| `npm run start:dev`       | Desarrollo con variables de entorno |
+| `npm run start:dev-fresh` | Desarrollo forzando nuevo login     |
+| `npm run android`         | Ejecuta en Android                  |
+| `npm run ios`             | Ejecuta en iOS                      |
+| `npm run web`             | Ejecuta en navegador                |
+| `npm run lint`            | Ejecuta linter ESLint               |
+| `npm run cache:clear`     | Limpia caché de Expo                |
+| `npm run prebuild`        | Genera código nativo                |
 
 ## 🏗️ Estructura del Proyecto
 
@@ -245,10 +253,12 @@ mobile-almendros/
 La aplicación usa autenticación basada en documentos de identidad:
 
 ### Tipos de documento soportados:
+
 - **CC**: Cédula de Ciudadanía
 - **TI**: Tarjeta de Identidad
 
 ### Flujo de autenticación:
+
 1. Usuario ingresa tipo y número de documento
 2. App envía credenciales al backend (`POST /clients/login`)
 3. Backend valida y retorna usuario + token JWT
@@ -256,6 +266,7 @@ La aplicación usa autenticación basada en documentos de identidad:
 5. Token se incluye en todas las peticiones subsecuentes
 
 ### Almacenamiento seguro:
+
 - **iOS/Android**: Expo Secure Store (Keychain/Keystore)
 - **Web**: localStorage (fallback)
 
@@ -264,15 +275,19 @@ La aplicación usa autenticación basada en documentos de identidad:
 ### Desarrollo Local
 
 #### Emulador Android
+
 La aplicación automáticamente convierte `localhost` a `10.0.2.2` para emuladores Android.
 
 #### Dispositivo Físico
+
 Usa tu IP local real (ej: `192.168.1.12`).
 
 #### Simulador iOS
+
 Puede usar `localhost` directamente.
 
 ### Red WiFi
+
 Para testing en dispositivos físicos, asegúrate de que:
 
 - ✅ Dispositivo y computadora están en la misma red
@@ -284,6 +299,7 @@ Para testing en dispositivos físicos, asegúrate de que:
 ### ❌ "Network Error" / No se conecta al backend
 
 **Causas comunes:**
+
 - Backend no está ejecutándose
 - IP incorrecta en configuración
 - Firewall bloqueando conexión
@@ -320,6 +336,7 @@ npx expo start --tunnel
 ### ❌ Errores de autenticación
 
 **Verificar:**
+
 - ✅ Backend tiene usuarios de prueba
 - ✅ Documento existe en base de datos
 - ✅ Usuario está activo (`isActive: true`)
@@ -350,44 +367,52 @@ cd android
 El proyecto incluye 4 workflows de GitHub Actions:
 
 ### 1. Auto Changelog (`.github/workflows/auto-changelog-workflow.yml`)
+
 - ✅ Se ejecuta en push a `main`
 - ✅ Genera `CHANGELOG.md` automáticamente
 - ✅ Crea PR con cambios
 
 ### 2. Auto Tag (`.github/workflows/auto-tag-workflow.yml`)
+
 - ✅ Se ejecuta en push a `main`
 - ✅ Crea tags basado en `package.json` version
 - ✅ Solo si el tag no existe
 
 ### 3. Mobile CI (`.github/workflows/mobile-test-workflow.yml`)
+
 - ✅ Se ejecuta en push/PR a `main`, `release`, `develop`
 - ✅ Ejecuta linting
 - ✅ Construye APK Android
 - ✅ Sube artefactos
 
 ### 4. SonarQube (`.github/workflows/build-sonar.yml`)
+
 - ✅ Análisis de calidad de código
 - ✅ Se ejecuta en push/PR
 
 ## 🚨 Consideraciones Importantes
 
 ### ⚠️ Dependencias Críticas
+
 - **Backend obligatorio**: La app no funciona sin backend
 - **Red local**: Dispositivos deben estar en misma red para desarrollo
 - **Node.js versión**: Usar exactamente 22.15.0 (especificado en `.node-version`)
 
 ### 🔒 Seguridad
+
 - ✅ Tokens almacenados en Secure Store
 - ✅ No hay credenciales hardcodeadas
 - ✅ HTTPS en producción
 - ⚠️ HTTP solo en desarrollo local
 
 ### 📱 Compatibilidad
+
 - ✅ **Android**: API 21+ (Android 5.0+)
 - ✅ **iOS**: iOS 11.0+
 - ✅ **Web**: Navegadores modernos
 
 ### 🚀 Rendimiento
+
 - ✅ Lazy loading de rutas
 - ✅ Caché de imágenes
 - ✅ Optimización de bundle
@@ -396,15 +421,18 @@ El proyecto incluye 4 workflows de GitHub Actions:
 ## 📚 Recursos Adicionales
 
 ### Documentación
+
 - [Expo Docs](https://docs.expo.dev/)
 - [React Native Docs](https://reactnative.dev/docs/getting-started)
 - [Expo Router](https://expo.github.io/router/)
 
 ### Testing
+
 - **Expo Go**: Para desarrollo rápido
 - **Development Build**: Para funcionalidades nativas personalizadas
 
 ### Debugging
+
 - **Flipper**: Debugging avanzado
 - **React DevTools**: Inspección de componentes
 - **Network Inspector**: Análisis de peticiones HTTP
