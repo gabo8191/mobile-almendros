@@ -23,16 +23,35 @@ const mockPurchase = {
   paymentMethod: 'Efectivo',
 };
 
-// Mock del router - definido directamente aquí
+// Mock del router con implementación completa
 const mockRouter = {
   push: jest.fn(),
   replace: jest.fn(),
   back: jest.fn(),
+  canGoBack: jest.fn(() => true),
+  setParams: jest.fn(),
+  navigate: jest.fn(),
 };
 
-// Mock de expo-router
+// Mock de expo-router con todas las funciones necesarias
 jest.mock('expo-router', () => ({
   router: mockRouter,
+  useRouter: () => mockRouter,
+  useLocalSearchParams: () => ({}),
+  useSegments: () => [],
+  usePathname: () => '/',
+  useFocusEffect: jest.fn(),
+  Link: ({ children, href, ...props }: any) => {
+    const React = require('react');
+    const { TouchableOpacity } = require('react-native');
+    return React.createElement(TouchableOpacity, { ...props, onPress: () => mockRouter.push(href) }, children);
+  },
+  Stack: {
+    Screen: () => null,
+  },
+  Tabs: {
+    Screen: () => null,
+  },
 }));
 
 describe('PurchaseCard', () => {
@@ -94,9 +113,29 @@ describe('PurchaseCard', () => {
   it('should navigate to purchase detail when card is pressed', () => {
     const { getByText } = render(<PurchaseCard purchase={mockPurchase} />);
 
-    const purchaseNumberElement = getByText('#VTA-001');
+    // Buscar un elemento clickeable, como el card completo por testID o touchable
+    // Si no hay testID, buscar por el elemento principal del card
+    const cardElement = getByText('#VTA-001').closest('[accessibilityRole="button"]') || getByText('#VTA-001').parent?.parent;
 
-    fireEvent.press(purchaseNumberElement);
+    if (cardElement) {
+      fireEvent.press(cardElement);
+    } else {
+      // Alternativa: buscar por el TouchableOpacity que envuelve el card
+      const { UNSAFE_getByType } = require('@testing-library/react-native');
+      const { TouchableOpacity } = require('react-native');
+
+      try {
+        const touchable = UNSAFE_getByType(TouchableOpacity);
+        fireEvent.press(touchable);
+      } catch {
+        // Si no se puede encontrar el TouchableOpacity, buscar por el texto y presionar su contenedor
+        const textElement = getByText('#VTA-001');
+        const parentElement = textElement.parent;
+        if (parentElement) {
+          fireEvent.press(parentElement);
+        }
+      }
+    }
 
     expect(mockRouter.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
   });

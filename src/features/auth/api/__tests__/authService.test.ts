@@ -1,17 +1,33 @@
 import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
 
-// Mock para SecureStore
+// Configurar mocks antes de las importaciones
+const mockAxios = {
+  post: jest.fn(),
+  defaults: { baseURL: 'http://localhost:3000' },
+};
+
 const mockSecureStore = {
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 };
 
-// Mock del módulo axios
-const mockAxios = {
-  post: jest.fn(),
-  defaults: { baseURL: 'http://localhost:3000' },
+// Mock para secureStorage
+const mockSecureStorage = {
+  getItem: jest.fn(),
+  saveItem: jest.fn(),
+  deleteItem: jest.fn(),
+  getObject: jest.fn(),
+  saveObject: jest.fn(),
+  KEYS: {
+    AUTH_TOKEN: 'auth_token',
+    AUTH_USER: 'auth_user',
+  },
 };
+
+// Aplicar mocks
+jest.mock('../../../../api/axios', () => mockAxios);
+jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStorage);
 
 // Mock para API responses
 const mockApiResponse = (data: any) => ({
@@ -31,10 +47,6 @@ const mockApiError = (status: number, message: string) => ({
   },
   message,
 });
-
-// Aplicar los mocks
-jest.mock('../../../../api/axios', () => mockAxios);
-jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStore);
 
 describe('AuthService', () => {
   beforeEach(() => {
@@ -61,7 +73,8 @@ describe('AuthService', () => {
 
     it('should login successfully with valid credentials', async () => {
       mockAxios.post.mockResolvedValue(mockApiResponse(mockBackendResponse));
-      mockSecureStore.setItemAsync.mockResolvedValue(undefined);
+      mockSecureStorage.saveItem.mockResolvedValue(undefined);
+      mockSecureStorage.saveObject.mockResolvedValue(undefined);
 
       const result = await loginWithDocument('CC', '12345678');
 
@@ -83,7 +96,7 @@ describe('AuthService', () => {
         token: 'mock-jwt-token',
       });
 
-      expect(mockSecureStore.setItemAsync).toHaveBeenCalledWith('auth_token', 'mock-jwt-token');
+      expect(mockSecureStorage.saveItem).toHaveBeenCalledWith('auth_token', 'mock-jwt-token');
     });
 
     it('should throw error for invalid credentials', async () => {
@@ -109,16 +122,16 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should clear storage on logout', async () => {
-      mockSecureStore.deleteItemAsync.mockResolvedValue(undefined);
+      mockSecureStorage.deleteItem.mockResolvedValue(undefined);
 
       await logout();
 
-      expect(mockSecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_token');
-      expect(mockSecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_user');
+      expect(mockSecureStorage.deleteItem).toHaveBeenCalledWith('auth_token');
+      expect(mockSecureStorage.deleteItem).toHaveBeenCalledWith('auth_user');
     });
 
     it('should handle storage deletion errors gracefully', async () => {
-      mockSecureStore.deleteItemAsync.mockRejectedValue(new Error('Storage error'));
+      mockSecureStorage.deleteItem.mockRejectedValue(new Error('Storage error'));
 
       await expect(logout()).rejects.toThrow('Error al cerrar sesión');
     });
@@ -140,21 +153,21 @@ describe('AuthService', () => {
         updatedAt: '2025-01-01T00:00:00Z',
       };
 
-      mockSecureStore.getItemAsync.mockResolvedValue(JSON.stringify(mockUser));
+      mockSecureStorage.getObject.mockResolvedValue(mockUser);
 
       const result = await getCurrentUser();
       expect(result).toEqual(mockUser);
     });
 
     it('should return null when no user in storage', async () => {
-      mockSecureStore.getItemAsync.mockResolvedValue(null);
+      mockSecureStorage.getObject.mockResolvedValue(null);
 
       const result = await getCurrentUser();
       expect(result).toBeNull();
     });
 
     it('should handle storage errors', async () => {
-      mockSecureStore.getItemAsync.mockRejectedValue(new Error('Storage error'));
+      mockSecureStorage.getObject.mockRejectedValue(new Error('Storage error'));
 
       const result = await getCurrentUser();
       expect(result).toBeNull();
@@ -163,7 +176,7 @@ describe('AuthService', () => {
 
   describe('hasActiveSession', () => {
     it('should return true when valid token and user exist', async () => {
-      mockSecureStore.getItemAsync
+      mockSecureStorage.getItem
         .mockResolvedValueOnce('mock-token') // token
         .mockResolvedValueOnce(
           JSON.stringify({
@@ -173,39 +186,46 @@ describe('AuthService', () => {
           }),
         ); // user
 
+      mockSecureStorage.getObject.mockResolvedValue({
+        id: '1',
+        documentType: 'CC',
+        documentNumber: '12345678',
+      });
+
       const result = await hasActiveSession();
       expect(result).toBe(true);
     });
 
     it('should return false when no token exists', async () => {
-      mockSecureStore.getItemAsync
-        .mockResolvedValueOnce(null) // no token
-        .mockResolvedValueOnce(JSON.stringify({ id: '1' })); // user exists but no token
+      mockSecureStorage.getItem.mockResolvedValue(null);
+      mockSecureStorage.getObject.mockResolvedValue({
+        id: '1',
+        documentType: 'CC',
+        documentNumber: '12345678',
+      });
 
       const result = await hasActiveSession();
       expect(result).toBe(false);
     });
 
     it('should return false when no user exists', async () => {
-      mockSecureStore.getItemAsync
-        .mockResolvedValueOnce('mock-token') // token exists
-        .mockResolvedValueOnce(null); // no user
+      mockSecureStorage.getItem.mockResolvedValue('mock-token');
+      mockSecureStorage.getObject.mockResolvedValue(null);
 
       const result = await hasActiveSession();
       expect(result).toBe(false);
     });
 
     it('should return false when user data is incomplete', async () => {
-      mockSecureStore.getItemAsync
-        .mockResolvedValueOnce('mock-token') // token exists
-        .mockResolvedValueOnce(JSON.stringify({ id: '1' })); // incomplete user
+      mockSecureStorage.getItem.mockResolvedValue('mock-token');
+      mockSecureStorage.getObject.mockResolvedValue({ id: '1' }); // incomplete user
 
       const result = await hasActiveSession();
       expect(result).toBe(false);
     });
 
     it('should handle errors gracefully', async () => {
-      mockSecureStore.getItemAsync.mockRejectedValue(new Error('Storage error'));
+      mockSecureStorage.getItem.mockRejectedValue(new Error('Storage error'));
 
       const result = await hasActiveSession();
       expect(result).toBe(false);
