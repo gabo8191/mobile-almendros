@@ -1,5 +1,4 @@
 // Mock para endpoints API
-
 const mockEndpoints = {
   ENDPOINTS: {
     AUTH: {
@@ -37,8 +36,7 @@ const mockEndpoints = {
   },
 };
 
-// Exportar como named export
-module.exports = mockEndpoints;
+module.exports = mockEndpoints.ENDPOINTS;
 
-// También exportar como default
-module.exports.default = mockEndpoints;
+module.exports.ENDPOINTS = mockEndpoints.ENDPOINTS;
+module.exports.default = mockEndpoints.ENDPOINTS;

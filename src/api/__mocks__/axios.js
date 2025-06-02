@@ -2,19 +2,63 @@
 const mockAxiosInstance = {
   interceptors: {
     request: {
-      use: jest.fn(),
+      use: jest.fn((onFulfilled, onRejected) => {
+        return 1; // Retornar un ID del interceptor
+      }),
       eject: jest.fn(),
     },
     response: {
-      use: jest.fn(),
+      use: jest.fn((onFulfilled, onRejected) => {
+        return 1; // Retornar un ID del interceptor
+      }),
       eject: jest.fn(),
     },
   },
-  get: jest.fn(() => Promise.resolve({ data: {} })),
-  post: jest.fn(() => Promise.resolve({ data: {} })),
-  put: jest.fn(() => Promise.resolve({ data: {} })),
-  delete: jest.fn(() => Promise.resolve({ data: {} })),
-  patch: jest.fn(() => Promise.resolve({ data: {} })),
+  get: jest.fn(() =>
+    Promise.resolve({
+      data: {},
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {},
+    }),
+  ),
+  post: jest.fn(() =>
+    Promise.resolve({
+      data: {},
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {},
+    }),
+  ),
+  put: jest.fn(() =>
+    Promise.resolve({
+      data: {},
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {},
+    }),
+  ),
+  delete: jest.fn(() =>
+    Promise.resolve({
+      data: {},
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {},
+    }),
+  ),
+  patch: jest.fn(() =>
+    Promise.resolve({
+      data: {},
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {},
+    }),
+  ),
   defaults: {
     baseURL: 'http://localhost:3000',
     timeout: 30000,
@@ -22,10 +66,11 @@ const mockAxiosInstance = {
       'Content-Type': 'application/json',
     },
   },
+  create: jest.fn(() => mockAxiosInstance),
+  request: jest.fn(() => Promise.resolve({ data: {} })),
+  all: jest.fn(),
+  spread: jest.fn(),
 };
 
-// Exportar como default (para import default)
 module.exports = mockAxiosInstance;
-
-// También exportar como default property
 module.exports.default = mockAxiosInstance;

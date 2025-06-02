@@ -1,5 +1,3 @@
-// Test que usa mocks globales
-
 // Mock datos para pruebas
 const mockBackendResponse = {
   message: 'Login successful',
@@ -32,7 +30,33 @@ const mockTransformedUser = {
   updatedAt: '2025-01-01T00:00:00Z',
 };
 
-// Mock explícito para secureStorage
+// ===== MOCKS INLINE =====
+
+// Mock para axios
+const mockAxios = {
+  post: jest.fn(),
+  get: jest.fn(),
+  defaults: {
+    baseURL: 'http://localhost:3000',
+    timeout: 30000,
+    headers: { 'Content-Type': 'application/json' },
+  },
+};
+
+jest.mock('../../../../api/axios', () => mockAxios);
+
+// Mock para endpoints
+const mockEndpoints = {
+  ENDPOINTS: {
+    AUTH: {
+      LOGIN_CLIENT: '/clients/login',
+    },
+  },
+};
+
+jest.mock('../../../../api/endpoints', () => mockEndpoints);
+
+// Mock para secureStorage
 const mockSecureStorage = {
   KEYS: {
     AUTH_TOKEN: 'auth_token',
@@ -45,40 +69,17 @@ const mockSecureStorage = {
   getObject: jest.fn(),
 };
 
-// Mock explícito para axios
-const mockAxios = {
-  post: jest.fn(),
-  get: jest.fn(),
-  defaults: {
-    baseURL: 'http://localhost:3000',
-    timeout: 30000,
-    headers: { 'Content-Type': 'application/json' },
-  },
-};
-
-// Mock explícito para endpoints
-const mockEndpoints = {
-  ENDPOINTS: {
-    AUTH: {
-      LOGIN_CLIENT: '/clients/login',
-    },
-  },
-};
-
-// Aplicar mocks ANTES de cualquier import
-jest.mock('../../../../api/axios', () => ({ default: mockAxios }));
-jest.mock('../../../../api/endpoints', () => mockEndpoints);
 jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStorage);
 
-// Importar DESPUÉS de los mocks
+// ===== AHORA SÍ IMPORTAR =====
 import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
 
 describe('AuthService', () => {
   beforeEach(() => {
-    // Limpiar todas las llamadas de los mocks
+    // Limpiar TODOS los mocks
     jest.clearAllMocks();
 
-    // Configurar valores por defecto
+    // Configurar valores por defecto para cada test
     mockSecureStorage.saveItem.mockResolvedValue(undefined);
     mockSecureStorage.saveObject.mockResolvedValue(undefined);
     mockSecureStorage.getItem.mockResolvedValue(null);
@@ -117,14 +118,16 @@ describe('AuthService', () => {
       const error = {
         response: {
           status: 404,
-          data: { message: 'User not found' },
+          data: { message: 'Cliente con documento CC 99999999 no encontrado o inactivo' },
           statusText: 'Not Found',
         },
         message: 'Request failed with status code 404',
       };
       mockAxios.post.mockRejectedValue(error);
 
-      await expect(loginWithDocument('CC', '99999999')).rejects.toThrow('User not found');
+      await expect(loginWithDocument('CC', '99999999')).rejects.toThrow(
+        'Cliente con documento CC 99999999 no encontrado o inactivo',
+      );
     });
 
     it('should throw network error when connection fails', async () => {
@@ -142,14 +145,14 @@ describe('AuthService', () => {
       const error = {
         response: {
           status: 401,
-          data: { message: 'Unauthorized' },
+          data: { message: 'Documento inválido. Por favor intente nuevamente.' },
           statusText: 'Unauthorized',
         },
         message: 'Request failed with status code 401',
       };
       mockAxios.post.mockRejectedValue(error);
 
-      await expect(loginWithDocument('CC', '12345678')).rejects.toThrow('Unauthorized');
+      await expect(loginWithDocument('CC', '12345678')).rejects.toThrow('Documento inválido. Por favor intente nuevamente.');
     });
   });
 
