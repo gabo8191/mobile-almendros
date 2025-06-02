@@ -23,35 +23,16 @@ const mockPurchase = {
   paymentMethod: 'Efectivo',
 };
 
-// Mock del router con implementación completa
+// Mock del router - definido directamente aquí
 const mockRouter = {
   push: jest.fn(),
   replace: jest.fn(),
   back: jest.fn(),
-  canGoBack: jest.fn(() => true),
-  setParams: jest.fn(),
-  navigate: jest.fn(),
 };
 
-// Mock de expo-router con todas las funciones necesarias
+// Mock de expo-router
 jest.mock('expo-router', () => ({
   router: mockRouter,
-  useRouter: () => mockRouter,
-  useLocalSearchParams: () => ({}),
-  useSegments: () => [],
-  usePathname: () => '/',
-  useFocusEffect: jest.fn(),
-  Link: ({ children, href, ...props }: any) => {
-    const React = require('react');
-    const { TouchableOpacity } = require('react-native');
-    return React.createElement(TouchableOpacity, { ...props, onPress: () => mockRouter.push(href) }, children);
-  },
-  Stack: {
-    Screen: () => null,
-  },
-  Tabs: {
-    Screen: () => null,
-  },
 }));
 
 describe('PurchaseCard', () => {
@@ -111,31 +92,15 @@ describe('PurchaseCard', () => {
   });
 
   it('should navigate to purchase detail when card is pressed', () => {
-    const { getByText } = render(<PurchaseCard purchase={mockPurchase} />);
+    const { getByTestId, getByText } = render(<PurchaseCard purchase={mockPurchase} />);
 
-    // Buscar un elemento clickeable, como el card completo por testID o touchable
-    // Si no hay testID, buscar por el elemento principal del card
-    const cardElement = getByText('#VTA-001').closest('[accessibilityRole="button"]') || getByText('#VTA-001').parent?.parent;
+    // Buscar el elemento que tenga el rol de botón o sea clickeable
+    // En React Native Testing Library, buscaremos por el texto y triggearemos el evento en el componente padre
+    const purchaseNumberElement = getByText('#VTA-001');
 
-    if (cardElement) {
-      fireEvent.press(cardElement);
-    } else {
-      // Alternativa: buscar por el TouchableOpacity que envuelve el card
-      const { UNSAFE_getByType } = require('@testing-library/react-native');
-      const { TouchableOpacity } = require('react-native');
-
-      try {
-        const touchable = UNSAFE_getByType(TouchableOpacity);
-        fireEvent.press(touchable);
-      } catch {
-        // Si no se puede encontrar el TouchableOpacity, buscar por el texto y presionar su contenedor
-        const textElement = getByText('#VTA-001');
-        const parentElement = textElement.parent;
-        if (parentElement) {
-          fireEvent.press(parentElement);
-        }
-      }
-    }
+    // Simular el press en el elemento que contiene el número de compra
+    // Como PurchaseCard es un TouchableOpacity, podemos hacer press directamente en cualquier texto contenido
+    fireEvent.press(purchaseNumberElement);
 
     expect(mockRouter.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
   });
@@ -191,5 +156,14 @@ describe('PurchaseCard', () => {
     expect(getByText('Efectivo')).toBeTruthy();
     expect(getByText('Ver detalles completos')).toBeTruthy();
     expect(getByText('1')).toBeTruthy();
+  });
+
+  it('should navigate when view details is pressed', () => {
+    const { getByText } = render(<PurchaseCard purchase={mockPurchase} />);
+
+    const viewDetailsButton = getByText('Ver detalles completos');
+    fireEvent.press(viewDetailsButton);
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
   });
 });

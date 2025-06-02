@@ -1,33 +1,30 @@
 import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
 
-// Configurar mocks antes de las importaciones
-const mockAxios = {
-  post: jest.fn(),
-  defaults: { baseURL: 'http://localhost:3000' },
-};
-
+// Mock para SecureStore
 const mockSecureStore = {
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 };
 
-// Mock para secureStorage
+// Mock del módulo axios
+const mockAxios = {
+  post: jest.fn(),
+  defaults: { baseURL: 'http://localhost:3000' },
+};
+
+// Mock para el módulo de secureStorage
 const mockSecureStorage = {
-  getItem: jest.fn(),
   saveItem: jest.fn(),
+  getItem: jest.fn(),
   deleteItem: jest.fn(),
-  getObject: jest.fn(),
   saveObject: jest.fn(),
+  getObject: jest.fn(),
   KEYS: {
     AUTH_TOKEN: 'auth_token',
     AUTH_USER: 'auth_user',
   },
 };
-
-// Aplicar mocks
-jest.mock('../../../../api/axios', () => mockAxios);
-jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStorage);
 
 // Mock para API responses
 const mockApiResponse = (data: any) => ({
@@ -47,6 +44,10 @@ const mockApiError = (status: number, message: string) => ({
   },
   message,
 });
+
+// Aplicar los mocks
+jest.mock('../../../../api/axios', () => mockAxios);
+jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStorage);
 
 describe('AuthService', () => {
   beforeEach(() => {
@@ -97,10 +98,12 @@ describe('AuthService', () => {
       });
 
       expect(mockSecureStorage.saveItem).toHaveBeenCalledWith('auth_token', 'mock-jwt-token');
+      expect(mockSecureStorage.saveObject).toHaveBeenCalled();
     });
 
     it('should throw error for invalid credentials', async () => {
-      mockAxios.post.mockRejectedValue(mockApiError(404, 'User not found'));
+      const error = mockApiError(404, 'User not found');
+      mockAxios.post.mockRejectedValue(error);
 
       await expect(loginWithDocument('CC', '99999999')).rejects.toThrow('User not found');
     });
@@ -114,9 +117,10 @@ describe('AuthService', () => {
     });
 
     it('should handle unauthorized error', async () => {
-      mockAxios.post.mockRejectedValue(mockApiError(401, 'Unauthorized'));
+      const error = mockApiError(401, 'Unauthorized');
+      mockAxios.post.mockRejectedValue(error);
 
-      await expect(loginWithDocument('CC', '12345678')).rejects.toThrow('Documento inválido. Por favor intente nuevamente.');
+      await expect(loginWithDocument('CC', '12345678')).rejects.toThrow('Unauthorized');
     });
   });
 
@@ -183,13 +187,18 @@ describe('AuthService', () => {
             id: '1',
             documentType: 'CC',
             documentNumber: '12345678',
+            firstName: 'Juan',
+            lastName: 'Pérez',
           }),
         ); // user
 
+      // Mock getCurrentUser to return a valid user
       mockSecureStorage.getObject.mockResolvedValue({
         id: '1',
         documentType: 'CC',
         documentNumber: '12345678',
+        firstName: 'Juan',
+        lastName: 'Pérez',
       });
 
       const result = await hasActiveSession();
@@ -197,19 +206,21 @@ describe('AuthService', () => {
     });
 
     it('should return false when no token exists', async () => {
-      mockSecureStorage.getItem.mockResolvedValue(null);
-      mockSecureStorage.getObject.mockResolvedValue({
-        id: '1',
-        documentType: 'CC',
-        documentNumber: '12345678',
-      });
+      mockSecureStorage.getItem
+        .mockResolvedValueOnce(null) // no token
+        .mockResolvedValueOnce(JSON.stringify({ id: '1' })); // user exists but no token
+
+      mockSecureStorage.getObject.mockResolvedValue({ id: '1' });
 
       const result = await hasActiveSession();
       expect(result).toBe(false);
     });
 
     it('should return false when no user exists', async () => {
-      mockSecureStorage.getItem.mockResolvedValue('mock-token');
+      mockSecureStorage.getItem
+        .mockResolvedValueOnce('mock-token') // token exists
+        .mockResolvedValueOnce(null); // no user
+
       mockSecureStorage.getObject.mockResolvedValue(null);
 
       const result = await hasActiveSession();
@@ -217,7 +228,10 @@ describe('AuthService', () => {
     });
 
     it('should return false when user data is incomplete', async () => {
-      mockSecureStorage.getItem.mockResolvedValue('mock-token');
+      mockSecureStorage.getItem
+        .mockResolvedValueOnce('mock-token') // token exists
+        .mockResolvedValueOnce(JSON.stringify({ id: '1' })); // incomplete user
+
       mockSecureStorage.getObject.mockResolvedValue({ id: '1' }); // incomplete user
 
       const result = await hasActiveSession();

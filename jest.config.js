@@ -3,30 +3,35 @@ const path = require('path');
 
 const config = {
   preset: 'jest-expo',
-  setupFilesAfterEnv: [path.join(__dirname, 'setup-testing.js')],
+  testEnvironment: 'node',
+  verbose: true,
+  resolver: undefined,
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+
   setupFiles: ['<rootDir>/jest-setup.js'],
+  setupFilesAfterEnv: [path.join(__dirname, 'setup-testing.js')],
 
-  // Configuración para manejar las transformaciones de módulos
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nanoid|@shopify/flash-list|moment|@testing-library|react-native-reanimated|expo-router)',
-  ],
-
-  // Directorios de módulos
   moduleDirectories: ['node_modules', '<rootDir>'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 
-  // CORREGIDO: moduleNameMapper (no moduleNameMapping)
+  // Mapeo de rutas y assets
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    '^../src/(.*)$': '<rootDir>/src/$1',
-    '^../../src/(.*)$': '<rootDir>/src/$1',
-    '^../../../src/(.*)$': '<rootDir>/src/$1',
-    '^../../../../src/(.*)$': '<rootDir>/src/$1',
-    // Mocks para archivos estáticos
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 'identity-obj-proxy',
+    '^react-native/Libraries/NativeModules/specs/NativeSourceCode$': '<rootDir>/src/shared/utils/__mocks__/NativeSourceCode.js',
+    '^react-native/(.*)$': 'react-native/$1',
+    '^@expo/vector-icons/(.*)$': '<rootDir>/src/shared/utils/__mocks__/ExpoVectorIcons.js',
+    '^nanoid/non-secure$': 'nanoid',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/src/shared/utils/__mocks__/fileMock.js',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
 
-  // Configuración de coverage
+  // Transpilación: Ignorar estos módulos (excepto los listados explícitamente)
+  transformIgnorePatterns: [
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nanoid|@shopify/flash-list|moment|@testing-library|react-native-reanimated)',
+  ],
+
+  // Recolección de coverage
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     'app/**/*.{ts,tsx}',
@@ -35,34 +40,8 @@ const config = {
     '!**/node_modules/**',
     '!**/coverage/**',
     '!**/__tests__/**',
-    '!**/jest-setup.js',
-    '!**/setup-testing.js',
+    '!**/__mocks__/**',
   ],
-
-  // Extensiones de archivos que Jest debe procesar
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-
-  // Patrones para encontrar archivos de test
-  testMatch: ['**/__tests__/**/*.(ts|tsx|js|jsx)', '**/*.(test|spec).(ts|tsx|js|jsx)'],
-
-  // Configuración del entorno de test
-  testEnvironment: 'node',
-
-  // Configuración más permisiva para evitar errores
-  verbose: true,
-
-  // Configuración de timeouts
-  testTimeout: 10000,
-
-  // Configuración para mocks globales
-  clearMocks: true,
-  resetMocks: true,
-  restoreMocks: true,
-
-  // Configuración para transformar archivos TypeScript
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
-  },
 };
 
 module.exports = config;
