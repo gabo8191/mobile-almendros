@@ -1,16 +1,39 @@
-// Configuraciones globales para Jest
+// Configuraciones globales para Jest - UPDATED
+console.log('🧪 Loading test setup...');
 
 // Mock para el entorno de desarrollo
 global.__DEV__ = true;
 
 // Mock para el objeto global window si no existe
 if (typeof window === 'undefined') {
-  global.window = {};
+  global.window = {
+    fs: {
+      readFile: jest.fn(),
+    },
+  };
 }
 
 // Mock para alert y confirm (usado en web)
 global.alert = jest.fn();
 global.confirm = jest.fn(() => true);
+
+// Configurar fetch global para testing
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({}),
+    ok: true,
+    status: 200,
+  }),
+);
+
+// Configurar TextEncoder/TextDecoder para Node
+if (typeof TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
+// ===== MOCKS CRÍTICOS =====
 
 // Mock para React Native modules problemáticos
 jest.mock('react-native/Libraries/NativeModules/specs/NativeSourceCode', () => ({
@@ -26,23 +49,29 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(() => Promise.resolve()),
 }));
 
-// Mock para Expo Router
-jest.mock('expo-router', () => {
-  const mockRouter = {
-    push: jest.fn(),
-    replace: jest.fn(),
-    back: jest.fn(),
-  };
+// Mock MEJORADO para Expo Router - MUY IMPORTANTE
+const mockRouterInstance = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  canGoBack: jest.fn(() => false),
+  setParams: jest.fn(),
+};
 
-  return {
-    useRouter: () => mockRouter,
-    useLocalSearchParams: () => ({}),
-    router: mockRouter,
-    useSegments: () => [],
-    Stack: ({ children }) => children,
-    Tabs: ({ children }) => children,
-  };
-});
+jest.mock('expo-router', () => ({
+  useRouter: () => mockRouterInstance,
+  useLocalSearchParams: () => ({}),
+  useSegments: () => [],
+  useGlobalSearchParams: () => ({}),
+  router: mockRouterInstance,
+  Stack: ({ children }) => children,
+  Tabs: ({ children }) => children,
+  Link: ({ children, href, ...props }) => {
+    const React = require('react');
+    const { TouchableOpacity } = require('react-native');
+    return React.createElement(TouchableOpacity, { ...props, onPress: () => mockRouterInstance.push(href) }, children);
+  },
+}));
 
 // Mock para React Navigation
 jest.mock('@react-navigation/native', () => ({
@@ -50,8 +79,97 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
+    canGoBack: jest.fn(() => false),
   }),
+  useFocusEffect: jest.fn(),
+  useIsFocused: () => true,
 }));
+
+// Mock COMPLETO para axios - CRÍTICO
+const mockAxiosInstance = {
+  interceptors: {
+    request: {
+      use: jest.fn(),
+      eject: jest.fn(),
+    },
+    response: {
+      use: jest.fn(),
+      eject: jest.fn(),
+    },
+  },
+  get: jest.fn(() => Promise.resolve({ data: {} })),
+  post: jest.fn(() => Promise.resolve({ data: {} })),
+  put: jest.fn(() => Promise.resolve({ data: {} })),
+  delete: jest.fn(() => Promise.resolve({ data: {} })),
+  patch: jest.fn(() => Promise.resolve({ data: {} })),
+  defaults: {
+    baseURL: 'http://localhost:3000',
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  },
+};
+
+jest.mock('axios', () => ({
+  create: jest.fn(() => mockAxiosInstance),
+  ...mockAxiosInstance,
+}));
+
+// Mock para nuestro API instance específico
+jest.mock('../../../api/axios', () => mockAxiosInstance, { virtual: true });
+jest.mock('../../api/axios', () => mockAxiosInstance, { virtual: true });
+jest.mock('../api/axios', () => mockAxiosInstance, { virtual: true });
+
+// Mock para secureStorage
+jest.mock(
+  '../../../shared/utils/secureStorage',
+  () => ({
+    saveItem: jest.fn(() => Promise.resolve()),
+    getItem: jest.fn(() => Promise.resolve(null)),
+    deleteItem: jest.fn(() => Promise.resolve()),
+    saveObject: jest.fn(() => Promise.resolve()),
+    getObject: jest.fn(() => Promise.resolve(null)),
+    KEYS: {
+      AUTH_TOKEN: 'auth_token',
+      AUTH_USER: 'auth_user',
+    },
+  }),
+  { virtual: true },
+);
+
+// Mock para todos los paths posibles de secureStorage
+jest.mock(
+  '../../shared/utils/secureStorage',
+  () => ({
+    saveItem: jest.fn(() => Promise.resolve()),
+    getItem: jest.fn(() => Promise.resolve(null)),
+    deleteItem: jest.fn(() => Promise.resolve()),
+    saveObject: jest.fn(() => Promise.resolve()),
+    getObject: jest.fn(() => Promise.resolve(null)),
+    KEYS: {
+      AUTH_TOKEN: 'auth_token',
+      AUTH_USER: 'auth_user',
+    },
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  '../shared/utils/secureStorage',
+  () => ({
+    saveItem: jest.fn(() => Promise.resolve()),
+    getItem: jest.fn(() => Promise.resolve(null)),
+    deleteItem: jest.fn(() => Promise.resolve()),
+    saveObject: jest.fn(() => Promise.resolve()),
+    getObject: jest.fn(() => Promise.resolve(null)),
+    KEYS: {
+      AUTH_TOKEN: 'auth_token',
+      AUTH_USER: 'auth_user',
+    },
+  }),
+  { virtual: true },
+);
 
 // Mock para Expo Vector Icons
 jest.mock('@expo/vector-icons', () => {
@@ -62,6 +180,7 @@ jest.mock('@expo/vector-icons', () => {
       ...props,
       children: name,
       testID: `icon-${name}`,
+      style: { fontSize: size || 24, color: color || '#000' },
     });
   };
 
@@ -72,34 +191,22 @@ jest.mock('@expo/vector-icons', () => {
     Ionicons: MockIcon,
     MaterialCommunityIcons: MockIcon,
     FontAwesome: MockIcon,
+    FontAwesome5: MockIcon,
   };
 });
-
-// Mock mejorado para axios - más completo
-jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    interceptors: {
-      request: { use: jest.fn() },
-      response: { use: jest.fn() },
-    },
-    get: jest.fn(() => Promise.resolve({ data: {} })),
-    post: jest.fn(() => Promise.resolve({ data: {} })),
-    put: jest.fn(() => Promise.resolve({ data: {} })),
-    delete: jest.fn(() => Promise.resolve({ data: {} })),
-    defaults: { baseURL: 'http://localhost:3000' },
-  })),
-  // También exportar las funciones directas
-  get: jest.fn(() => Promise.resolve({ data: {} })),
-  post: jest.fn(() => Promise.resolve({ data: {} })),
-  put: jest.fn(() => Promise.resolve({ data: {} })),
-  delete: jest.fn(() => Promise.resolve({ data: {} })),
-}));
 
 // Mock para Expo Constants
 jest.mock('expo-constants', () => ({
   expoConfig: {
     extra: {
       environment: 'development',
+    },
+  },
+  default: {
+    expoConfig: {
+      extra: {
+        environment: 'development',
+      },
     },
   },
 }));
@@ -170,6 +277,43 @@ jest.mock('nanoid/non-secure', () => ({
   nanoid: jest.fn(() => 'mocked-id'),
 }));
 
+// Mock para React Native Screens
+jest.mock('react-native-screens', () => ({
+  enableScreens: jest.fn(),
+  screensEnabled: () => true,
+}));
+
+// Mock para expo-splash-screen
+jest.mock('expo-splash-screen', () => ({
+  preventAutoHideAsync: jest.fn(),
+  hideAsync: jest.fn(),
+  SplashScreen: {
+    preventAutoHideAsync: jest.fn(),
+    hideAsync: jest.fn(),
+  },
+}));
+
+// Mock para config
+jest.mock(
+  '../config',
+  () => ({
+    default: {
+      api: {
+        baseUrl: 'http://localhost:3000',
+        timeout: 30000,
+      },
+      auth: {
+        storageKeys: {
+          token: 'auth_token',
+          user: 'auth_user',
+        },
+      },
+      environment: 'development',
+    },
+  }),
+  { virtual: true },
+);
+
 // Suprimir warnings específicos durante tests
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
@@ -209,12 +353,9 @@ afterAll(() => {
   console.warn = originalConsoleWarn;
 });
 
-// Mock global fetch para testing
-global.fetch = jest.fn();
+// Limpiar mocks entre tests
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
-// Configurar TextEncoder/TextDecoder para Node
-if (typeof TextEncoder === 'undefined') {
-  const { TextEncoder, TextDecoder } = require('util');
-  global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder;
-}
+console.log('✅ Test setup loaded successfully');

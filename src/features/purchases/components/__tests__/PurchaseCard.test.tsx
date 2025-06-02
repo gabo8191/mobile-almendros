@@ -23,21 +23,16 @@ const mockPurchase = {
   paymentMethod: 'Efectivo',
 };
 
-// Mock del router - definido directamente aquí
-const mockRouter = {
-  push: jest.fn(),
-  replace: jest.fn(),
-  back: jest.fn(),
-};
-
-// Mock de expo-router
-jest.mock('expo-router', () => ({
-  router: mockRouter,
-}));
+// Get the router mock that was set up in setup-testing.js
+const { router } = require('expo-router');
 
 describe('PurchaseCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset router mock calls
+    router.push.mockClear();
+    router.replace.mockClear();
+    router.back.mockClear();
   });
 
   it('should render purchase information correctly', () => {
@@ -53,8 +48,8 @@ describe('PurchaseCard', () => {
     expect(getByText('Efectivo')).toBeTruthy();
 
     // Verificar que se muestra el total (puede ser formato con coma o punto)
-    const totalElement = getByText(/34[.,]72/);
-    expect(totalElement).toBeTruthy();
+    const totalElements = getByText(/34[.,]72/);
+    expect(totalElements).toBeTruthy();
 
     // Verificar que se muestra la cantidad de productos
     expect(getByText('1')).toBeTruthy();
@@ -92,32 +87,30 @@ describe('PurchaseCard', () => {
   });
 
   it('should navigate to purchase detail when card is pressed', () => {
-    const { getByTestId, getByText } = render(<PurchaseCard purchase={mockPurchase} />);
+    const { getByText } = render(<PurchaseCard purchase={mockPurchase} />);
 
-    // Buscar el elemento que tenga el rol de botón o sea clickeable
-    // En React Native Testing Library, buscaremos por el texto y triggearemos el evento en el componente padre
+    // Find a pressable element - the purchase number is in a TouchableOpacity
     const purchaseNumberElement = getByText('#VTA-001');
 
-    // Simular el press en el elemento que contiene el número de compra
-    // Como PurchaseCard es un TouchableOpacity, podemos hacer press directamente en cualquier texto contenido
+    // Simulate press - this should trigger the TouchableOpacity's onPress
     fireEvent.press(purchaseNumberElement);
 
-    expect(mockRouter.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
+    expect(router.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
   });
 
   it('should show purchase date correctly formatted', () => {
     const { getByText, queryByText } = render(<PurchaseCard purchase={mockPurchase} />);
 
-    try {
-      const dateElement = getByText(/enero|15|2025/);
-      expect(dateElement).toBeTruthy();
-    } catch {
-      expect(getByText('#VTA-001')).toBeTruthy();
+    // Check if the purchase number is rendered (which means the component rendered)
+    expect(getByText('#VTA-001')).toBeTruthy();
 
-      const hasDateText = queryByText(/\d{1,2}.*\d{4}/);
-      if (hasDateText) {
-        expect(hasDateText).toBeTruthy();
-      }
+    // Try to find date elements - may vary based on locale
+    const hasDateText = queryByText(/enero|15|2025|\d{1,2}.*\d{4}/);
+    if (hasDateText) {
+      expect(hasDateText).toBeTruthy();
+    } else {
+      // If date formatting is different, just ensure component rendered
+      expect(getByText('#VTA-001')).toBeTruthy();
     }
   });
 
@@ -164,6 +157,6 @@ describe('PurchaseCard', () => {
     const viewDetailsButton = getByText('Ver detalles completos');
     fireEvent.press(viewDetailsButton);
 
-    expect(mockRouter.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
+    expect(router.push).toHaveBeenCalledWith('/(tabs)/purchase-detail?id=1');
   });
 });
