@@ -38,7 +38,13 @@
     "test:verify": "bash test-verification.sh",
     "cache:clear:windows": "if exist node_modules\\.cache rmdir /s /q node_modules\\.cache",
     "cache:clear:full": "npm run cache:clear:windows && jest --clearCache && if exist .expo rmdir /s /q .expo",
-    "test:clean": "npm run cache:clear:full && npm test"
+    "test:clean": "npm run cache:clear:full && npm test",
+    "test:working": "jest --config jest.working.config.js --verbose --no-cache",
+    "test:working-debug": "jest --config jest.working.config.js --verbose --no-cache --detectOpenHandles",
+    "test:simple": "jest --config jest.simple.config.js --verbose --no-cache",
+    "test:simple-debug": "jest --config jest.simple.config.js --verbose --no-cache --detectOpenHandles",
+    "test:final": "jest --config jest.final.config.js --verbose --no-cache",
+    "test:final-debug": "jest --config jest.final.config.js --verbose --no-cache --runInBand"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
