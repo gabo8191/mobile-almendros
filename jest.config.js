@@ -14,7 +14,7 @@ const config = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 
   // Mapeo de rutas y assets
-  moduleNameMapper: {
+  moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/$1',
 
     // Mock específicos para módulos problemáticos
@@ -78,6 +78,11 @@ const config = {
 
   // Configuración adicional para debugging
   maxWorkers: 1, // Run tests serially for better debugging
+
+  // Global setup for mocks
+  globals: {
+    __DEV__: true,
+  },
 };
 
 module.exports = config;

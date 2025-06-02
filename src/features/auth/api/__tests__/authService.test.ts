@@ -1,32 +1,10 @@
-const mockAxiosInstance = {
-  post: jest.fn(),
-  get: jest.fn(),
-  put: jest.fn(),
-  delete: jest.fn(),
-  defaults: { baseURL: 'http://localhost:3000' },
-  interceptors: {
-    request: { use: jest.fn() },
-    response: { use: jest.fn() },
-  },
-};
+declare global {
+  var mockAxiosInstance: any;
+  var mockSecureStorageService: any;
+}
 
-const mockSecureStorage = {
-  saveItem: jest.fn(),
-  getItem: jest.fn(),
-  deleteItem: jest.fn(),
-  saveObject: jest.fn(),
-  getObject: jest.fn(),
-  KEYS: {
-    AUTH_TOKEN: 'auth_token',
-    AUTH_USER: 'auth_user',
-  },
-};
-
-// Mock the axios module
-jest.mock('../../../../api/axios', () => mockAxiosInstance);
-
-// Mock the secureStorage module
-jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStorage);
+const mockAxiosInstance = global.mockAxiosInstance;
+const mockSecureStorage = global.mockSecureStorageService;
 
 // Now import the function to test
 import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
@@ -67,14 +45,30 @@ describe('AuthService', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
+
+    // Reset axios mock
+    mockAxiosInstance.post.mockClear();
+    mockAxiosInstance.get.mockClear();
+
+    // Reset secure storage mocks
+    mockSecureStorage.saveItem.mockClear();
+    mockSecureStorage.getItem.mockClear();
+    mockSecureStorage.deleteItem.mockClear();
+    mockSecureStorage.saveObject.mockClear();
+    mockSecureStorage.getObject.mockClear();
+
+    // Reset to default implementations
+    mockSecureStorage.saveItem.mockResolvedValue(undefined);
+    mockSecureStorage.saveObject.mockResolvedValue(undefined);
+    mockSecureStorage.getItem.mockResolvedValue(null);
+    mockSecureStorage.getObject.mockResolvedValue(null);
+    mockSecureStorage.deleteItem.mockResolvedValue(undefined);
   });
 
   describe('loginWithDocument', () => {
     it('should login successfully with valid credentials', async () => {
       // Configure mocks for successful login
       mockAxiosInstance.post.mockResolvedValue({ data: mockBackendResponse });
-      mockSecureStorage.saveItem.mockResolvedValue(undefined);
-      mockSecureStorage.saveObject.mockResolvedValue(undefined);
 
       const result = await loginWithDocument('CC', '12345678');
 
@@ -108,7 +102,10 @@ describe('AuthService', () => {
     });
 
     it('should throw network error when connection fails', async () => {
-      mockAxiosInstance.post.mockRejectedValue({ code: 'NETWORK_ERROR' });
+      mockAxiosInstance.post.mockRejectedValue({
+        code: 'NETWORK_ERROR',
+        message: 'Network Error',
+      });
 
       await expect(loginWithDocument('CC', '12345678')).rejects.toThrow(
         'Error de conexión. Verifique su red e intente nuevamente.',
@@ -132,6 +129,7 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should clear storage on logout', async () => {
+      // Make sure deleteItem resolves successfully
       mockSecureStorage.deleteItem.mockResolvedValue(undefined);
 
       await logout();

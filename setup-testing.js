@@ -1,4 +1,4 @@
-// Configuraciones globales para Jest - UPDATED
+// Configuraciones globales para Jest
 console.log('🧪 Loading test setup...');
 
 // Mock para el entorno de desarrollo
@@ -42,12 +42,14 @@ jest.mock('react-native/Libraries/NativeModules/specs/NativeSourceCode', () => (
   removeListeners: jest.fn(),
 }));
 
-// Mock para Expo SecureStore
-jest.mock('expo-secure-store', () => ({
+// Mock para Expo SecureStore - MEJORADO
+const mockSecureStore = {
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   setItemAsync: jest.fn(() => Promise.resolve()),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
-}));
+};
+
+jest.mock('expo-secure-store', () => mockSecureStore);
 
 // Mock MEJORADO para Expo Router - MUY IMPORTANTE
 const mockRouterInstance = {
@@ -85,7 +87,7 @@ jest.mock('@react-navigation/native', () => ({
   useIsFocused: () => true,
 }));
 
-// Mock COMPLETO para axios - CRÍTICO
+// Mock COMPLETO para axios - CRÍTICO MEJORADO
 const mockAxiosInstance = {
   interceptors: {
     request: {
@@ -111,65 +113,47 @@ const mockAxiosInstance = {
   },
 };
 
+// Mock principal de axios
 jest.mock('axios', () => ({
   create: jest.fn(() => mockAxiosInstance),
+  default: mockAxiosInstance,
   ...mockAxiosInstance,
 }));
 
-// Mock para nuestro API instance específico
+// Mock para nuestro API instance específico - TODOS LOS PATHS POSIBLES
 jest.mock('../../../api/axios', () => mockAxiosInstance, { virtual: true });
 jest.mock('../../api/axios', () => mockAxiosInstance, { virtual: true });
 jest.mock('../api/axios', () => mockAxiosInstance, { virtual: true });
+jest.mock('../../../src/api/axios', () => mockAxiosInstance, { virtual: true });
+jest.mock('../../src/api/axios', () => mockAxiosInstance, { virtual: true });
+jest.mock('../src/api/axios', () => mockAxiosInstance, { virtual: true });
 
-// Mock para secureStorage
-jest.mock(
-  '../../../shared/utils/secureStorage',
-  () => ({
-    saveItem: jest.fn(() => Promise.resolve()),
-    getItem: jest.fn(() => Promise.resolve(null)),
-    deleteItem: jest.fn(() => Promise.resolve()),
-    saveObject: jest.fn(() => Promise.resolve()),
-    getObject: jest.fn(() => Promise.resolve(null)),
-    KEYS: {
-      AUTH_TOKEN: 'auth_token',
-      AUTH_USER: 'auth_user',
-    },
-  }),
-  { virtual: true },
-);
+// Mock MEJORADO para secureStorage - TODOS LOS PATHS
+const mockSecureStorageService = {
+  saveItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  deleteItem: jest.fn(() => Promise.resolve()),
+  saveObject: jest.fn(() => Promise.resolve()),
+  getObject: jest.fn(() => Promise.resolve(null)),
+  KEYS: {
+    AUTH_TOKEN: 'auth_token',
+    AUTH_USER: 'auth_user',
+  },
+};
 
 // Mock para todos los paths posibles de secureStorage
-jest.mock(
+const secureStoragePaths = [
+  '../../../shared/utils/secureStorage',
   '../../shared/utils/secureStorage',
-  () => ({
-    saveItem: jest.fn(() => Promise.resolve()),
-    getItem: jest.fn(() => Promise.resolve(null)),
-    deleteItem: jest.fn(() => Promise.resolve()),
-    saveObject: jest.fn(() => Promise.resolve()),
-    getObject: jest.fn(() => Promise.resolve(null)),
-    KEYS: {
-      AUTH_TOKEN: 'auth_token',
-      AUTH_USER: 'auth_user',
-    },
-  }),
-  { virtual: true },
-);
-
-jest.mock(
   '../shared/utils/secureStorage',
-  () => ({
-    saveItem: jest.fn(() => Promise.resolve()),
-    getItem: jest.fn(() => Promise.resolve(null)),
-    deleteItem: jest.fn(() => Promise.resolve()),
-    saveObject: jest.fn(() => Promise.resolve()),
-    getObject: jest.fn(() => Promise.resolve(null)),
-    KEYS: {
-      AUTH_TOKEN: 'auth_token',
-      AUTH_USER: 'auth_user',
-    },
-  }),
-  { virtual: true },
-);
+  '../../../src/shared/utils/secureStorage',
+  '../../src/shared/utils/secureStorage',
+  '../src/shared/utils/secureStorage',
+];
+
+secureStoragePaths.forEach((path) => {
+  jest.mock(path, () => mockSecureStorageService, { virtual: true });
+});
 
 // Mock para Expo Vector Icons
 jest.mock('@expo/vector-icons', () => {
@@ -352,6 +336,11 @@ afterAll(() => {
   console.error = originalConsoleError;
   console.warn = originalConsoleWarn;
 });
+
+// EXPORT MOCKS PARA USO EN TESTS
+global.mockAxiosInstance = mockAxiosInstance;
+global.mockSecureStorageService = mockSecureStorageService;
+global.mockSecureStore = mockSecureStore;
 
 // Limpiar mocks entre tests
 beforeEach(() => {
