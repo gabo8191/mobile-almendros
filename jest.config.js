@@ -13,9 +13,30 @@ const config = {
   moduleDirectories: ['node_modules', '<rootDir>'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 
-  // Mapeo de rutas y assets
-  moduleNameMapping: {
+  // moduleNameMapper con todos los paths necesarios
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+
+    // Mock específico para secureStorage (todas las rutas posibles)
+    '^src/shared/utils/secureStorage$': '<rootDir>/src/shared/utils/__mocks__/secureStorage.js',
+    '^../../../../shared/utils/secureStorage$': '<rootDir>/src/shared/utils/__mocks__/secureStorage.js',
+    '^../../../shared/utils/secureStorage$': '<rootDir>/src/shared/utils/__mocks__/secureStorage.js',
+    '^../../shared/utils/secureStorage$': '<rootDir>/src/shared/utils/__mocks__/secureStorage.js',
+    '^../shared/utils/secureStorage$': '<rootDir>/src/shared/utils/__mocks__/secureStorage.js',
+
+    // Mock para axios API (crear archivo mock)
+    '^../../../../api/axios$': '<rootDir>/src/api/__mocks__/axios.js',
+    '^../../../api/axios$': '<rootDir>/src/api/__mocks__/axios.js',
+    '^../../api/axios$': '<rootDir>/src/api/__mocks__/axios.js',
+    '^../api/axios$': '<rootDir>/src/api/__mocks__/axios.js',
+    '^src/api/axios$': '<rootDir>/src/api/__mocks__/axios.js',
+
+    // Mock para endpoints API
+    '^../../../../api/endpoints$': '<rootDir>/src/api/__mocks__/endpoints.js',
+    '^../../../api/endpoints$': '<rootDir>/src/api/__mocks__/endpoints.js',
+    '^../../api/endpoints$': '<rootDir>/src/api/__mocks__/endpoints.js',
+    '^../api/endpoints$': '<rootDir>/src/api/__mocks__/endpoints.js',
+    '^src/api/endpoints$': '<rootDir>/src/api/__mocks__/endpoints.js',
 
     // Mock específicos para módulos problemáticos
     '^react-native/Libraries/NativeModules/specs/NativeSourceCode$': '<rootDir>/src/shared/utils/__mocks__/NativeSourceCode.js',
@@ -34,7 +55,7 @@ const config = {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
 
-  // Transpilación: Ignorar estos módulos (excepto los listados explícitamente)
+  // Transpilación específica
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nanoid|@shopify/flash-list|moment|@testing-library|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context)',
   ],
@@ -76,8 +97,9 @@ const config = {
   clearMocks: true,
   restoreMocks: true,
 
-  // Configuración adicional para debugging
+  // Configuración adicional
   maxWorkers: 1, // Run tests serially for better debugging
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.expo/'],
 
   // Global setup for mocks
   globals: {

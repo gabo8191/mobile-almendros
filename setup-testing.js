@@ -33,7 +33,24 @@ if (typeof TextEncoder === 'undefined') {
   global.TextDecoder = TextDecoder;
 }
 
-// ===== MOCKS CRÍTICOS =====
+// ===== CRITICAL MOCKS =====
+
+// Mock para secureStorage
+jest.doMock('src/shared/utils/secureStorage', () => {
+  const mockStorage = {
+    KEYS: {
+      AUTH_TOKEN: 'auth_token',
+      AUTH_USER: 'auth_user',
+    },
+    saveItem: jest.fn(() => Promise.resolve()),
+    getItem: jest.fn(() => Promise.resolve(null)),
+    deleteItem: jest.fn(() => Promise.resolve()),
+    saveObject: jest.fn(() => Promise.resolve()),
+    getObject: jest.fn(() => Promise.resolve(null)),
+  };
+
+  return mockStorage;
+});
 
 // Mock para React Native modules problemáticos
 jest.mock('react-native/Libraries/NativeModules/specs/NativeSourceCode', () => ({
@@ -42,7 +59,7 @@ jest.mock('react-native/Libraries/NativeModules/specs/NativeSourceCode', () => (
   removeListeners: jest.fn(),
 }));
 
-// Mock para Expo SecureStore - MEJORADO
+// Mock para Expo SecureStore
 const mockSecureStore = {
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   setItemAsync: jest.fn(() => Promise.resolve()),
@@ -51,7 +68,7 @@ const mockSecureStore = {
 
 jest.mock('expo-secure-store', () => mockSecureStore);
 
-// Mock MEJORADO para Expo Router - MUY IMPORTANTE
+// Mock para Expo Router
 const mockRouterInstance = {
   push: jest.fn(),
   replace: jest.fn(),
@@ -75,19 +92,7 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-// Mock para React Navigation
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
-  useNavigation: () => ({
-    navigate: jest.fn(),
-    goBack: jest.fn(),
-    canGoBack: jest.fn(() => false),
-  }),
-  useFocusEffect: jest.fn(),
-  useIsFocused: () => true,
-}));
-
-// Mock COMPLETO para axios - CRÍTICO MEJORADO
+// Mock para axios
 const mockAxiosInstance = {
   interceptors: {
     request: {
@@ -113,47 +118,11 @@ const mockAxiosInstance = {
   },
 };
 
-// Mock principal de axios
 jest.mock('axios', () => ({
   create: jest.fn(() => mockAxiosInstance),
   default: mockAxiosInstance,
   ...mockAxiosInstance,
 }));
-
-// Mock para nuestro API instance específico - TODOS LOS PATHS POSIBLES
-jest.mock('../../../api/axios', () => mockAxiosInstance, { virtual: true });
-jest.mock('../../api/axios', () => mockAxiosInstance, { virtual: true });
-jest.mock('../api/axios', () => mockAxiosInstance, { virtual: true });
-jest.mock('../../../src/api/axios', () => mockAxiosInstance, { virtual: true });
-jest.mock('../../src/api/axios', () => mockAxiosInstance, { virtual: true });
-jest.mock('../src/api/axios', () => mockAxiosInstance, { virtual: true });
-
-// Mock MEJORADO para secureStorage - TODOS LOS PATHS
-const mockSecureStorageService = {
-  saveItem: jest.fn(() => Promise.resolve()),
-  getItem: jest.fn(() => Promise.resolve(null)),
-  deleteItem: jest.fn(() => Promise.resolve()),
-  saveObject: jest.fn(() => Promise.resolve()),
-  getObject: jest.fn(() => Promise.resolve(null)),
-  KEYS: {
-    AUTH_TOKEN: 'auth_token',
-    AUTH_USER: 'auth_user',
-  },
-};
-
-// Mock para todos los paths posibles de secureStorage
-const secureStoragePaths = [
-  '../../../shared/utils/secureStorage',
-  '../../shared/utils/secureStorage',
-  '../shared/utils/secureStorage',
-  '../../../src/shared/utils/secureStorage',
-  '../../src/shared/utils/secureStorage',
-  '../src/shared/utils/secureStorage',
-];
-
-secureStoragePaths.forEach((path) => {
-  jest.mock(path, () => mockSecureStorageService, { virtual: true });
-});
 
 // Mock para Expo Vector Icons
 jest.mock('@expo/vector-icons', () => {
@@ -195,108 +164,27 @@ jest.mock('expo-constants', () => ({
   },
 }));
 
-// Mock para Expo Blur
-jest.mock('expo-blur', () => ({
-  BlurView: ({ children, ...props }) => {
-    const React = require('react');
-    const { View } = require('react-native');
-    return React.createElement(View, props, children);
-  },
-}));
-
-// Mock para React Native Gesture Handler
-jest.mock('react-native-gesture-handler', () => {
-  const React = require('react');
-  const RN = require('react-native');
-
-  return {
-    Swipeable: RN.View,
-    DrawerLayout: RN.View,
-    State: {},
-    ScrollView: RN.ScrollView,
-    Slider: RN.View,
-    Switch: RN.Switch,
-    TextInput: RN.TextInput,
-    ToolbarAndroid: RN.View,
-    ViewPagerAndroid: RN.View,
-    DrawerLayoutAndroid: RN.View,
-    WebView: RN.View,
-    NativeViewGestureHandler: RN.View,
-    TapGestureHandler: RN.View,
-    FlingGestureHandler: RN.View,
-    ForceTouchGestureHandler: RN.View,
-    LongPressGestureHandler: RN.View,
-    PanGestureHandler: RN.View,
-    PinchGestureHandler: RN.View,
-    RotationGestureHandler: RN.View,
-    RawButton: RN.TouchableOpacity,
-    BaseButton: RN.TouchableOpacity,
-    RectButton: RN.TouchableOpacity,
-    BorderlessButton: RN.TouchableOpacity,
-    FlatList: RN.FlatList,
-    gestureHandlerRootHOC: jest.fn(),
-    Directions: {},
-  };
-});
-
-// Mock para React Native Safe Area Context
-jest.mock('react-native-safe-area-context', () => {
-  const React = require('react');
-  const RN = require('react-native');
-
-  return {
-    SafeAreaProvider: ({ children }) => children,
-    SafeAreaView: RN.View,
-    useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
-    useSafeAreaFrame: jest.fn(() => ({ x: 0, y: 0, width: 0, height: 0 })),
-  };
-});
-
-// Mock para nanoid
-jest.mock('nanoid', () => ({
-  nanoid: jest.fn(() => 'mocked-id'),
-}));
-
-jest.mock('nanoid/non-secure', () => ({
-  nanoid: jest.fn(() => 'mocked-id'),
-}));
-
-// Mock para React Native Screens
-jest.mock('react-native-screens', () => ({
-  enableScreens: jest.fn(),
-  screensEnabled: () => true,
-}));
-
-// Mock para expo-splash-screen
-jest.mock('expo-splash-screen', () => ({
-  preventAutoHideAsync: jest.fn(),
-  hideAsync: jest.fn(),
-  SplashScreen: {
-    preventAutoHideAsync: jest.fn(),
-    hideAsync: jest.fn(),
-  },
-}));
-
 // Mock para config
-jest.mock(
-  '../config',
-  () => ({
-    default: {
-      api: {
-        baseUrl: 'http://localhost:3000',
-        timeout: 30000,
-      },
-      auth: {
-        storageKeys: {
-          token: 'auth_token',
-          user: 'auth_user',
-        },
-      },
-      environment: 'development',
+const mockConfig = {
+  api: {
+    baseUrl: 'http://localhost:3000',
+    timeout: 30000,
+  },
+  auth: {
+    storageKeys: {
+      token: 'auth_token',
+      user: 'auth_user',
     },
-  }),
-  { virtual: true },
-);
+  },
+  environment: 'development',
+};
+
+jest.mock('../config', () => ({ default: mockConfig }), { virtual: true });
+jest.mock('../../config', () => ({ default: mockConfig }), { virtual: true });
+jest.mock('../../../config', () => ({ default: mockConfig }), { virtual: true });
+jest.mock('../src/config', () => ({ default: mockConfig }), { virtual: true });
+jest.mock('../../src/config', () => ({ default: mockConfig }), { virtual: true });
+jest.mock('../../../src/config', () => ({ default: mockConfig }), { virtual: true });
 
 // Suprimir warnings específicos durante tests
 const originalConsoleError = console.error;
@@ -337,14 +225,7 @@ afterAll(() => {
   console.warn = originalConsoleWarn;
 });
 
-// EXPORT MOCKS PARA USO EN TESTS
 global.mockAxiosInstance = mockAxiosInstance;
-global.mockSecureStorageService = mockSecureStorageService;
 global.mockSecureStore = mockSecureStore;
-
-// Limpiar mocks entre tests
-beforeEach(() => {
-  jest.clearAllMocks();
-});
 
 console.log('✅ Test setup loaded successfully');

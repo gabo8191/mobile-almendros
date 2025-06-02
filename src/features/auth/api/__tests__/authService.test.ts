@@ -1,74 +1,100 @@
-declare global {
-  var mockAxiosInstance: any;
-  var mockSecureStorageService: any;
-}
+// Test que usa mocks globales
 
-const mockAxiosInstance = global.mockAxiosInstance;
-const mockSecureStorage = global.mockSecureStorageService;
-
-// Now import the function to test
-import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
-
-describe('AuthService', () => {
-  // Mock backend response template
-  const mockBackendResponse = {
-    message: 'Login successful',
-    user: {
-      id: 1,
-      firstName: 'Juan',
-      lastName: 'Pérez',
-      email: 'juan@example.com',
-      documentType: 'CC',
-      documentNumber: '12345678',
-      role: 'client',
-      isActive: true,
-      createdAt: '2025-01-01T00:00:00Z',
-      updatedAt: '2025-01-01T00:00:00Z',
-    },
-    token: 'mock-jwt-token',
-  };
-
-  const mockTransformedUser = {
-    id: '1',
-    email: 'juan@example.com',
+// Mock datos para pruebas
+const mockBackendResponse = {
+  message: 'Login successful',
+  user: {
+    id: 1,
     firstName: 'Juan',
     lastName: 'Pérez',
-    phoneNumber: '',
-    address: '',
+    email: 'juan@example.com',
     documentType: 'CC',
     documentNumber: '12345678',
+    role: 'client',
     isActive: true,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
-  };
+  },
+  token: 'mock-jwt-token',
+};
 
+const mockTransformedUser = {
+  id: '1',
+  email: 'juan@example.com',
+  firstName: 'Juan',
+  lastName: 'Pérez',
+  phoneNumber: '',
+  address: '',
+  documentType: 'CC',
+  documentNumber: '12345678',
+  isActive: true,
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+};
+
+// Mock explícito para secureStorage
+const mockSecureStorage = {
+  KEYS: {
+    AUTH_TOKEN: 'auth_token',
+    AUTH_USER: 'auth_user',
+  },
+  saveItem: jest.fn(),
+  getItem: jest.fn(),
+  deleteItem: jest.fn(),
+  saveObject: jest.fn(),
+  getObject: jest.fn(),
+};
+
+// Mock explícito para axios
+const mockAxios = {
+  post: jest.fn(),
+  get: jest.fn(),
+  defaults: {
+    baseURL: 'http://localhost:3000',
+    timeout: 30000,
+    headers: { 'Content-Type': 'application/json' },
+  },
+};
+
+// Mock explícito para endpoints
+const mockEndpoints = {
+  ENDPOINTS: {
+    AUTH: {
+      LOGIN_CLIENT: '/clients/login',
+    },
+  },
+};
+
+// Aplicar mocks ANTES de cualquier import
+jest.mock('../../../../api/axios', () => ({ default: mockAxios }));
+jest.mock('../../../../api/endpoints', () => mockEndpoints);
+jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStorage);
+
+// Importar DESPUÉS de los mocks
+import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
+
+describe('AuthService', () => {
   beforeEach(() => {
-    // Clear all mocks before each test
+    // Limpiar todas las llamadas de los mocks
     jest.clearAllMocks();
 
-    // Reset axios mock
-    mockAxiosInstance.post.mockClear();
-    mockAxiosInstance.get.mockClear();
-
-    // Reset secure storage mocks
-    mockSecureStorage.saveItem.mockClear();
-    mockSecureStorage.getItem.mockClear();
-    mockSecureStorage.deleteItem.mockClear();
-    mockSecureStorage.saveObject.mockClear();
-    mockSecureStorage.getObject.mockClear();
-
-    // Reset to default implementations
+    // Configurar valores por defecto
     mockSecureStorage.saveItem.mockResolvedValue(undefined);
     mockSecureStorage.saveObject.mockResolvedValue(undefined);
     mockSecureStorage.getItem.mockResolvedValue(null);
     mockSecureStorage.getObject.mockResolvedValue(null);
     mockSecureStorage.deleteItem.mockResolvedValue(undefined);
+
+    mockAxios.post.mockResolvedValue({ data: {} });
+    mockAxios.get.mockResolvedValue({ data: {} });
   });
 
   describe('loginWithDocument', () => {
     it('should login successfully with valid credentials', async () => {
-      // Configure mocks for successful login
-      mockAxiosInstance.post.mockResolvedValue({ data: mockBackendResponse });
+      // Configurar mocks para éxito
+      mockAxios.post.mockResolvedValue({ data: mockBackendResponse });
+      mockSecureStorage.saveItem.mockResolvedValue(undefined);
+      mockSecureStorage.saveObject.mockResolvedValue(undefined);
 
       const result = await loginWithDocument('CC', '12345678');
 
@@ -78,7 +104,7 @@ describe('AuthService', () => {
         token: 'mock-jwt-token',
       });
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+      expect(mockAxios.post).toHaveBeenCalledWith(
         '/clients/login',
         { documentType: 'CC', documentNumber: '12345678' },
         expect.any(Object),
@@ -96,13 +122,13 @@ describe('AuthService', () => {
         },
         message: 'Request failed with status code 404',
       };
-      mockAxiosInstance.post.mockRejectedValue(error);
+      mockAxios.post.mockRejectedValue(error);
 
       await expect(loginWithDocument('CC', '99999999')).rejects.toThrow('User not found');
     });
 
     it('should throw network error when connection fails', async () => {
-      mockAxiosInstance.post.mockRejectedValue({
+      mockAxios.post.mockRejectedValue({
         code: 'NETWORK_ERROR',
         message: 'Network Error',
       });
@@ -121,7 +147,7 @@ describe('AuthService', () => {
         },
         message: 'Request failed with status code 401',
       };
-      mockAxiosInstance.post.mockRejectedValue(error);
+      mockAxios.post.mockRejectedValue(error);
 
       await expect(loginWithDocument('CC', '12345678')).rejects.toThrow('Unauthorized');
     });
@@ -129,7 +155,6 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should clear storage on logout', async () => {
-      // Make sure deleteItem resolves successfully
       mockSecureStorage.deleteItem.mockResolvedValue(undefined);
 
       await logout();
