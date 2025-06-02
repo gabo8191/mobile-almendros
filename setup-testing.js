@@ -1,4 +1,4 @@
-console.log('🧪 Loading minimal test setup...');
+// Setup de testing minimal
 
 // Solo lo más básico y necesario
 global.__DEV__ = true;
@@ -10,16 +10,16 @@ if (typeof window === 'undefined') {
   };
 }
 
-// TextEncoder/TextDecoder para Node.js
+// TextEncoder/TextDecoder
 if (typeof TextEncoder === 'undefined') {
   const { TextEncoder, TextDecoder } = require('util');
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;
 }
 
-// ===== SOLO MOCKS UNIVERSALES =====
+// ===== MOCKS UNIVERSALES =====
 
-// Mock para React Native modules que siempre dan problemas
+// Mock para React Native modules
 jest.mock('react-native/Libraries/NativeModules/specs/NativeSourceCode', () => ({
   getConstants: jest.fn(() => ({})),
   addListener: jest.fn(),
@@ -110,5 +110,3 @@ console.warn = (...args) => {
 
 // Exponer router mock globalmente
 global.mockRouter = mockRouter;
-
-console.log('✅ Clean test setup loaded successfully');
