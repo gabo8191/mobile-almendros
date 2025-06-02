@@ -1,9 +1,11 @@
 import { loginWithDocument, logout, getCurrentUser, hasActiveSession } from '../authService';
-import { mockApiResponse, mockApiError, mockSecureStore } from '../../../../shared/utils/test-utils';
 
-// Mock de las dependencias
-jest.mock('../../../../api/axios');
-jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStore);
+// Mock para SecureStore
+const mockSecureStore = {
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+};
 
 // Mock del módulo axios
 const mockAxios = {
@@ -11,7 +13,28 @@ const mockAxios = {
   defaults: { baseURL: 'http://localhost:3000' },
 };
 
+// Mock para API responses
+const mockApiResponse = (data: any) => ({
+  data,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {},
+});
+
+// Mock para errores de API
+const mockApiError = (status: number, message: string) => ({
+  response: {
+    status,
+    data: { message },
+    statusText: 'Error',
+  },
+  message,
+});
+
+// Aplicar los mocks
 jest.mock('../../../../api/axios', () => mockAxios);
+jest.mock('../../../../shared/utils/secureStorage', () => mockSecureStore);
 
 describe('AuthService', () => {
   beforeEach(() => {

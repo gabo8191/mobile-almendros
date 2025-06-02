@@ -13,11 +13,6 @@ const config = {
   // Directorios de módulos
   moduleDirectories: ['node_modules', '<rootDir>'],
 
-  // Resolver paths con alias @
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/$1',
-  },
-
   // Configuración de coverage
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

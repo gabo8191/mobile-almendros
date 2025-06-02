@@ -1,6 +1,3 @@
-// Configurar jest-native matchers
-import '@testing-library/jest-native/extend-expect';
-
 // Mock para Expo SecureStore
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(() => Promise.resolve(null)),
@@ -38,7 +35,11 @@ jest.mock('@expo/vector-icons', () => {
   const MockIcon = ({ name, size, color, ...props }) => {
     const React = require('react');
     const { Text } = require('react-native');
-    return React.createElement(Text, { ...props, children: name });
+    return React.createElement(Text, {
+      ...props,
+      children: name,
+      testID: `icon-${name}`,
+    });
   };
 
   return {
