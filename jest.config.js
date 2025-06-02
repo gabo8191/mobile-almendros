@@ -4,8 +4,8 @@ const path = require('path');
 const config = {
   preset: 'jest-expo',
   testEnvironment: 'node',
-  verbose: true,
-  resolver: undefined,
+  verbose: false,
+  silent: false,
 
   setupFiles: ['<rootDir>/jest-setup.js'],
   setupFilesAfterEnv: ['<rootDir>/setup-testing.js'],
@@ -108,6 +108,20 @@ const config = {
 
   detectOpenHandles: false,
   detectLeaks: false,
+
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        outputDirectory: './coverage',
+        outputName: 'junit.xml',
+      },
+    ],
+  ],
+
+  notify: false,
+  notifyMode: 'failure',
 };
 
 module.exports = config;

@@ -19,13 +19,14 @@
     "cache:clear": "expo start --clear",
     "prebuild": "npx expo prebuild --clean",
     "postinstall": "patch-package",
-    "test": "jest --verbose --no-cache",
+    "test": "jest --silent --no-cache --reporters=default",
     "test:watch": "jest --watch --verbose --no-cache",
     "test:coverage": "jest --coverage --verbose --no-cache",
     "test:clear": "jest --clearCache && npm run test",
     "test:debug": "jest --verbose --no-cache --detectOpenHandles --runInBand",
     "test:ci": "jest --ci --coverage --watchAll=false --verbose --no-cache --runInBand",
-    "test:final": "jest --config jest.final.config.js --verbose --no-cache"
+    "test:final": "jest --config jest.final.config.js --verbose --no-cache",
+    "test:clean": "jest --silent --no-cache --maxWorkers=1"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -84,6 +85,7 @@
     "eslint-plugin-testing-library": "^7.1.1",
     "jest": "^29.7.0",
     "jest-expo": "^53.0.1",
+    "jest-junit": "^16.0.0",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "typescript": "~5.8.3"

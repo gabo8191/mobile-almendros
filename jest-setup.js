@@ -1,6 +1,4 @@
-// Configuraciones globales básicas para Jest - SIMPLIFIED VERSION
-
-console.log('🔧 Loading basic Jest setup...');
+// Configuraciones globales básicas para Jest
 
 // Mock para el entorno de desarrollo
 global.__DEV__ = true;
@@ -14,7 +12,7 @@ if (typeof window === 'undefined') {
   };
 }
 
-// Mock para alert y confirm (usado en web)
+// Mock para alert y confirm
 global.alert = jest.fn();
 global.confirm = jest.fn(() => true);
 
@@ -29,7 +27,7 @@ if (!global.fetch) {
   );
 }
 
-// Configurar TextEncoder/TextDecoder para Node.js
+// Configurar TextEncoder/TextDecoder
 if (typeof TextEncoder === 'undefined') {
   const { TextEncoder, TextDecoder } = require('util');
   global.TextEncoder = TextEncoder;
@@ -54,4 +52,16 @@ console.warn = (...args) => {
   originalConsoleWarn.call(console, ...args);
 };
 
-console.log('✅ Basic Jest setup completed');
+const originalConsoleLog = console.log;
+console.log = (...args) => {
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('🧪') ||
+      args[0].includes('✅') ||
+      args[0].includes('❌') ||
+      args[0].includes('MOCK SUCCESS') ||
+      args[0].includes('ERROR'))
+  ) {
+    originalConsoleLog.call(console, ...args);
+  }
+};
