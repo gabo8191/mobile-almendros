@@ -1,112 +1,244 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { router, useSegments } from 'expo-router';
+import { Platform } from 'react-native';
 import { User } from '../../features/auth/types/auth.types';
-import { login as loginApi, logout as logoutApi, getCurrentUser, storeUser } from '../../features/auth/api/authService';
+import {
+  logout as logoutApi,
+  getCurrentUser,
+  storeUser,
+  loginWithDocument as loginWithDocumentApi,
+  hasActiveSession,
+} from '../../features/auth/api/authService';
+import { deleteItem, KEYS, saveItem } from '../../shared/utils/secureStorage';
 
 type AuthContextType = {
-    user: User | null;
-    isLoading: boolean;
-    error: string | null;
-    login: (email: string, password: string) => Promise<void>;
-    logout: () => Promise<void>;
+  user: User | null;
+  isLoading: boolean;
+  error: string | null;
+  loginWithDocument: (documentType: string, documentNumber: string) => Promise<void>;
+  logout: () => Promise<void>;
+  clearError: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
-    user: null,
-    isLoading: false,
-    error: null,
-    login: async () => { },
-    logout: async () => { },
+  user: null,
+  isLoading: false,
+  error: null,
+  loginWithDocument: async () => {},
+  logout: async () => {},
+  clearError: () => {},
 });
 
 type AuthProviderProps = {
-    children: ReactNode;
+  children: ReactNode;
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const segments = useSegments();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const segments = useSegments();
 
-    // Check if user is authenticated and redirect accordingly
-    useEffect(() => {
-        if (!isLoading) {
-            const inAuthGroup = segments[0]?.startsWith('(auth)') ?? false;
+  const shouldForceLogin = () => {
+    const isDev = __DEV__;
+    const envForceLogin = process.env.EXPO_PUBLIC_DEV_FORCE_LOGIN === 'true';
 
-            if (!user && !inAuthGroup) {
-                // Redirect to login if not authenticated
-                router.replace('/(auth)/login' as any);
-            } else if (user && inAuthGroup) {
-                // Redirect to main app if already authenticated
-                router.replace('/(tabs)' as any);
-            }
+    console.log('🔧 Dev config check:', {
+      isDevelopment: isDev,
+      envForceLogin: envForceLogin,
+      shouldForce: isDev && envForceLogin,
+    });
+
+    return isDev && envForceLogin;
+  };
+
+  // Función para limpiar el almacenamiento
+  const clearStorage = async () => {
+    try {
+      await deleteItem(KEYS.AUTH_TOKEN);
+      await deleteItem(KEYS.AUTH_USER);
+      setUser(null);
+      setError(null);
+      console.log('🧹 Storage cleared successfully');
+    } catch (error) {
+      console.error('❌ Error clearing storage:', error);
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Cargar usuario guardado al iniciar
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        console.log('🔄 Loading user from storage...');
+
+        if (shouldForceLogin()) {
+          console.log('🔧 DESARROLLO: Forzando login según configuración (.env)');
+          await clearStorage();
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
         }
-    }, [user, isLoading, segments]);
 
-    // Load saved user on app start
-    useEffect(() => {
-        async function loadUser() {
-            try {
-                await logoutApi();
-                setUser(null);
-                setIsLoading(false);
-            } catch (err) {
-                console.error('Failed to load user:', err);
-                setIsLoading(false);
-            }
+        const hasSession = await hasActiveSession();
+        if (!hasSession) {
+          console.log('❌ No active session found');
+          await clearStorage();
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
         }
-    
-        loadUser();
-    }, []);
 
-    const login = async (email: string, password: string) => {
-        setIsLoading(true);
-        setError(null);
+        const savedUser = await getCurrentUser();
+        console.log('👤 Retrieved user from storage:', savedUser?.documentNumber);
 
-        try {
-            const response = await loginApi(email, password);
-
-            // Save user data
-            setUser(response.user);
-            await storeUser(response.user);
-
-            // Redirect to orders tab
-            router.replace('/(tabs)' as any);
-        } catch (err: any) {
-            setError('Credenciales inválidas. Por favor intente nuevamente.');
-            console.error('Login failed:', err);
-        } finally {
-            setIsLoading(false);
+        if (savedUser) {
+          if (savedUser.id && savedUser.documentType && savedUser.documentNumber) {
+            setUser(savedUser);
+            console.log('✅ User loaded successfully:', savedUser.documentType, savedUser.documentNumber);
+          } else {
+            console.log('❌ Invalid user data, clearing storage');
+            await clearStorage();
+          }
         }
-    };
+      } catch (err) {
+        console.error('❌ Error loading user:', err);
+        await clearStorage();
+      } finally {
+        setIsLoading(false);
+        setIsInitialized(true);
+      }
+    }
 
-    const logout = async () => {
-        setIsLoading(true);
+    loadUser();
+  }, []);
 
-        try {
-            await logoutApi();
-            setUser(null);
-            router.replace('/(auth)/login' as any);
-        } catch (err: any) {
-            console.error('Logout failed:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  // Verificar autenticación y redireccionar
+  useEffect(() => {
+    if (!isInitialized) {
+      console.log('⏳ Waiting for initialization...');
+      return;
+    }
 
-    return (
-        <AuthContext.Provider value={{ user, isLoading, error, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    const inAuthGroup = segments[0]?.startsWith('(auth)') ?? false;
+
+    console.log('🔀 Navigation check:', {
+      hasUser: !!user,
+      inAuthGroup,
+      currentSegment: segments[0],
+      isLoading,
+    });
+
+    if (!user && !inAuthGroup) {
+      console.log('🔄 Redirecting to login - no user');
+      router.replace('/(auth)/login' as any);
+    } else if (user && inAuthGroup) {
+      console.log('🔄 Redirecting to purchases - user authenticated');
+      router.replace('/(tabs)/purchases' as any);
+    }
+  }, [user, isInitialized, segments]);
+
+  const loginWithDocument = async (documentType: string, documentNumber: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log('🔐 Attempting login with:', documentType, documentNumber);
+      const response = await loginWithDocumentApi(documentType, documentNumber);
+
+      const transformedUser: User = {
+        id: response.user.id.toString(),
+        email: response.user.email,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        phoneNumber: '',
+        address: '',
+        documentType: response.user.documentType,
+        documentNumber: response.user.documentNumber,
+        isActive: response.user.isActive,
+        createdAt: response.user.createdAt,
+        updatedAt: response.user.updatedAt,
+      };
+
+      setUser(transformedUser);
+      await storeUser(transformedUser);
+
+      // Marcar que la app está inicializada
+      if (__DEV__) {
+        await saveItem('app_storage_initialized', 'true');
+      }
+
+      console.log('✅ Login successful, redirecting to purchases');
+      router.replace('/(tabs)/purchases' as any);
+    } catch (err: any) {
+      let errorMessage = 'Error durante el inicio de sesión';
+
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.response?.status === 404) {
+        errorMessage = `El documento ${documentType} ${documentNumber} no se encuentra registrado.`;
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Su cuenta está inactiva. Por favor contacte a soporte.';
+      }
+
+      console.error('❌ Login failed:', errorMessage);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    setIsLoading(true);
+
+    try {
+      console.log('🚪 Logging out...');
+
+      // Limpiar storage local primero
+      await clearStorage();
+
+      // Intentar logout en servidor (no bloquear si falla)
+      try {
+        await logoutApi();
+      } catch (serverError) {
+        console.warn('⚠️ Server logout failed, but continuing with local logout:', serverError);
+      }
+
+      console.log('✅ Logout successful, redirecting to login');
+
+      router.replace('/(auth)/login' as any);
+    } catch (err: any) {
+      console.error('❌ Logout error:', err);
+      router.replace('/(auth)/login' as any);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        error,
+        loginWithDocument,
+        logout,
+        clearError,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-// Hook para fácil acceso al contexto
 export const useAuth = () => {
-    const context = React.useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const context = React.useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

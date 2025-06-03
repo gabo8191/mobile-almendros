@@ -14,6 +14,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts",
-    "metro.config.js"
+    "metro.config.js",
+    "src/shared/utils/__mocks__/secureStorage.js"
   ]
 }
