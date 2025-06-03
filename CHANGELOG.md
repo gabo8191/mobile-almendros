@@ -15,6 +15,7 @@
 - Actualizar CHANGELOG.md para versión main
 - Actualizar contenido del README.md con nueva información del proyecto
 - Update README
+- Actualizar CHANGELOG.md para versión main
 
 ### Feat
 
