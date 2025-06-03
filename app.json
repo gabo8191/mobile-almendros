@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "scheme": "mobilealmendros",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",
@@ -23,7 +23,8 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
       "expo-router",
@@ -31,6 +32,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "environment": "development",
+      "devForceLogin": false
     }
   }
 }

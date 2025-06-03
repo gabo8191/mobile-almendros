@@ -2,13 +2,13 @@ import { Tabs } from 'expo-router';
 import { Platform, View, StyleSheet } from 'react-native';
 import { colors } from '../../src/constants/Colors';
 import { TabBarBackground } from '../../src/shared/components/ui/TabBarBackground';
-import { OrdersProvider } from '../../src/features/orders/context/OrdersContext';
+import { PurchasesProvider } from '../../src/features/purchases/context/PurchasesContext';
 import { Feather } from '@expo/vector-icons';
 import { typography } from '../../src/constants/Typography';
 
 export default function TabLayout() {
   return (
-    <OrdersProvider>
+    <PurchasesProvider>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -44,12 +44,12 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="purchases"
           options={{
-            title: 'Pedidos',
+            title: 'Mis Compras',
             tabBarIcon: ({ color, size }) => (
               <View style={styles.iconContainer}>
-                <Feather name="package" size={size} color={color} />
+                <Feather name="shopping-bag" size={size} color={color} />
               </View>
             ),
           }}
@@ -57,7 +57,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Perfil',
+            title: 'Mi Perfil',
             tabBarIcon: ({ color, size }) => (
               <View style={styles.iconContainer}>
                 <Feather name="user" size={size} color={color} />
@@ -65,8 +65,15 @@ export default function TabLayout() {
             ),
           }}
         />
+        {/* Ocultar la ruta de detalle de las pestañas */}
+        <Tabs.Screen
+          name="purchase-detail"
+          options={{
+            href: null, // Esto oculta la pestaña
+          }}
+        />
       </Tabs>
-    </OrdersProvider>
+    </PurchasesProvider>
   );
 }
 
